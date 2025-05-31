@@ -30,6 +30,14 @@ func (s *Set[K]) ForEach(f func(key K)) {
 	}
 }
 
-func (s *Set[K]) Len() int {
+func (s *Set[K]) ToSlice() []K {
+	slice := make([]K, 0, len(s.internal))
+	for key := range s.internal {
+		slice = append(slice, key)
+	}
+	return slice
+}
+
+func (s *Set[K]) Size() int {
 	return len(s.internal)
 }
