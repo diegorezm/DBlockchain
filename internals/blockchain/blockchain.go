@@ -9,12 +9,14 @@ import (
 	"net/url"
 	"strings"
 	"time"
+
+	"github.com/diegorezm/DBlockchain/internals/set"
 )
 
 type Blockchain struct {
 	chain        []Block
 	transactions []Transaction
-	nodes        []Node
+	nodes        set.Set[Node]
 	difficulty   uint32
 }
 
@@ -25,7 +27,7 @@ func NewBlockchain() *Blockchain {
 	return &Blockchain{
 		chain:        chain,
 		transactions: make([]Transaction, 0),
-		nodes:        make([]Node, 0),
+		nodes:        *set.NewSet[Node](),
 		difficulty:   2,
 	}
 }
@@ -71,7 +73,7 @@ func (b *Blockchain) AppendNode(addr string) {
 		return
 	}
 
-	b.nodes = append(b.nodes, Node{address: address})
+	b.nodes.Add(Node{address: address})
 }
 
 func (b *Blockchain) GetLastBlock() *Block {
@@ -87,7 +89,7 @@ func (b *Blockchain) GetTransactions() []Transaction {
 }
 
 func (b *Blockchain) getNodes() []Node {
-	return b.nodes
+	return b.nodes.ToSlice()
 }
 
 // This function mines the chain untils it finds a valid block, when this block is found
