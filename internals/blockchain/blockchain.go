@@ -6,10 +6,12 @@ import (
 	"encoding/gob"
 	"encoding/hex"
 	"fmt"
+	"net/http"
 	"net/url"
 	"strings"
 	"time"
 
+	"github.com/diegorezm/DBlockchain/internals/blockchain"
 	"github.com/diegorezm/DBlockchain/internals/set"
 )
 
@@ -86,6 +88,50 @@ func (b *Blockchain) GetChain() []Block {
 
 func (b *Blockchain) GetTransactions() []Transaction {
 	return b.transactions
+}
+
+func (b *Blockchain) replaceChain() {
+	replacementChain := []Block{}
+	maxChainLen := len(b.chain)
+
+	b.nodes.ForEach(func(key Node) {
+		url := key.address.String()
+		chain, err := GetBlockchainFromNode(url)
+
+		if err != nil {
+			fmt.Printf(err.Error())
+			return
+		}
+
+		if len(chain) > maxChainLen {
+			maxChainLen = len(chain)
+			replacementChain = chain
+		}
+	})
+
+	if len(replacementChain) > 0 && isChainValid(replacementChain) {
+		b.chain = replacementChain
+	}
+}
+
+func GetBlockchainFromNode(reqUrl string) ([]Block, error) {
+	res, err := http.Get(reqUrl)
+	if err != nil {
+		return []Block{}, err
+	}
+
+	defer res.Body.Close()
+
+	var chain []Block
+
+	dec := gob.NewDecoder(res.Body)
+	err = dec.Decode(&chain)
+
+	if err != nil {
+		return []Block{}, err
+	}
+
+	return chain, nil
 }
 
 func (b *Blockchain) getNodes() []Node {
