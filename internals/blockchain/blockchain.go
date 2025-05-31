@@ -30,11 +30,10 @@ func NewBlockchain() *Blockchain {
 	}
 }
 
-func (b *Blockchain) AppendBlock() {
+func (b *Blockchain) AppendBlock() error {
 	lastBlock := b.GetLastBlock()
 	if lastBlock == nil {
-		fmt.Print("Something went wrong while getting the last block.")
-		return
+		return fmt.Errorf("Something went wrong while getting the last block.")
 	}
 
 	newBlockInsert := BlockInsert{
@@ -51,12 +50,12 @@ func (b *Blockchain) AppendBlock() {
 	err := isBlockPairValid(lastBlock, newBlock)
 
 	if err != nil {
-		fmt.Print(err)
-		return
+		return err
 	}
 
 	b.chain = append(b.chain, *newBlock)
 	b.transactions = make([]Transaction, 0)
+	return nil
 }
 
 func (b *Blockchain) AppendTransaction(transactionInsert TransactionInsert) {
@@ -102,7 +101,6 @@ func (b *Blockchain) mine(blockToMine *Block) *Block {
 
 		if strings.HasPrefix(computedHash, strings.Repeat("0", int(b.difficulty))) {
 			blockToMine.Hash = computedHash
-			fmt.Printf("Found hash: %s\n", computedHash)
 			break
 		} else {
 			nonce++
