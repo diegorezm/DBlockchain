@@ -9,8 +9,6 @@ type Handler struct {
 	blockchain *Blockchain
 }
 
-// Mine block, get chain
-
 func NewHandler(blockchain *Blockchain) *Handler {
 	return &Handler{blockchain: blockchain}
 }

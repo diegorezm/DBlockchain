@@ -8,16 +8,16 @@ import (
 )
 
 func main() {
-	mux := &http.ServeMux{}
+	mux := http.NewServeMux()
 
-	handlers(mux)
+	blockchainHandlers(mux)
 
 	addr := ":4000"
 	fmt.Printf("Server listening on http://localhost%s/\n", addr)
 	http.ListenAndServe(addr, mux)
 }
 
-func handlers(mux *http.ServeMux) {
+func blockchainHandlers(mux *http.ServeMux) {
 	blockchain := bl.NewBlockchain()
 	blockchainHandler := bl.NewHandler(blockchain)
 
