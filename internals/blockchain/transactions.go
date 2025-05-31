@@ -1,9 +1,9 @@
 package blockchain
 
 type TransactionInsert struct {
-	from   string
-	to     string
-	amount float32
+	From   string
+	To     string
+	Amount float32
 }
 
 type Transaction struct {

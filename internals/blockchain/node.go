@@ -1,5 +1,7 @@
 package blockchain
 
+import "net/url"
+
 type Node struct {
-	address string
+	address *url.URL
 }
