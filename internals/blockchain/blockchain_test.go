@@ -4,7 +4,7 @@ import (
 	"testing"
 )
 
-func TestNewBlockchain(t *testing.T) {
+func Test_NewBlockchain(t *testing.T) {
 	blockchain := NewBlockchain()
 	chain := blockchain.GetChain()
 
@@ -21,7 +21,7 @@ func TestNewBlockchain(t *testing.T) {
 	}
 }
 
-func TestAppendBlock(t *testing.T) {
+func Test_AppendBlock(t *testing.T) {
 	blockchain := NewBlockchain()
 	chain := blockchain.GetChain()
 
@@ -50,7 +50,7 @@ func TestAppendBlock(t *testing.T) {
 	}
 }
 
-func TestAppendNode(t *testing.T) {
+func Test_AppendNode(t *testing.T) {
 	blockchain := NewBlockchain()
 	chain := blockchain.GetChain()
 
@@ -63,5 +63,26 @@ func TestAppendNode(t *testing.T) {
 
 	if len(nodes) != 1 {
 		t.Errorf("Something went wrong while adding a node.\n")
+	}
+}
+
+func Test_IsChainValid(t *testing.T) {
+	blockchain := NewBlockchain()
+	chain := blockchain.GetChain()
+
+	if len(chain) != 1 {
+		t.Errorf("Something went wrong while creating the genesis block.")
+	}
+
+	transactionInsert := TransactionInsert{
+		From:   "a",
+		To:     "b",
+		Amount: 1,
+	}
+	blockchain.AppendTransaction(transactionInsert)
+	blockchain.AppendTransaction(transactionInsert)
+
+	if !isChainValid(blockchain.GetChain()) {
+		t.Error("Something went wrong while appending blocks to the chain.")
 	}
 }
