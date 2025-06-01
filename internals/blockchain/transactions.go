@@ -6,6 +6,10 @@ type TransactionInsert struct {
 	Amount float32 `json:"amount"`
 }
 
+type TransactionBulkRequest struct {
+	Transactions []TransactionInsert `json:"transactions"`
+}
+
 type Transaction struct {
 	TransactionInsert
 }
