@@ -6,13 +6,10 @@ import (
 	"encoding/gob"
 	"encoding/hex"
 	"fmt"
+	"github.com/diegorezm/DBlockchain/internals/set"
 	"net/http"
-	"net/url"
 	"strings"
 	"time"
-
-	"github.com/diegorezm/DBlockchain/internals/blockchain"
-	"github.com/diegorezm/DBlockchain/internals/set"
 )
 
 type Blockchain struct {
@@ -68,14 +65,14 @@ func (b *Blockchain) AppendTransaction(transactionInsert TransactionInsert) {
 }
 
 func (b *Blockchain) AppendNode(addr string) {
-	address, err := url.Parse(addr)
+	node, err := NewNode(addr)
 
 	if err != nil {
 		fmt.Printf("ERROR: %s", err)
 		return
 	}
 
-	b.nodes.Add(Node{address: address})
+	b.nodes.Add(*node)
 }
 
 func (b *Blockchain) GetLastBlock() *Block {
@@ -90,16 +87,16 @@ func (b *Blockchain) GetTransactions() []Transaction {
 	return b.transactions
 }
 
-func (b *Blockchain) replaceChain() {
+func (b *Blockchain) replaceChain() bool {
 	replacementChain := []Block{}
 	maxChainLen := len(b.chain)
 
 	b.nodes.ForEach(func(key Node) {
-		url := key.address.String()
+		url := key.Address.String()
 		chain, err := GetBlockchainFromNode(url)
 
 		if err != nil {
-			fmt.Printf(err.Error())
+			fmt.Printf("%s", err.Error())
 			return
 		}
 
@@ -111,7 +108,9 @@ func (b *Blockchain) replaceChain() {
 
 	if len(replacementChain) > 0 && isChainValid(replacementChain) {
 		b.chain = replacementChain
+		return true
 	}
+	return false
 }
 
 func GetBlockchainFromNode(reqUrl string) ([]Block, error) {
@@ -169,23 +168,32 @@ func isChainValid(chain []Block) bool {
 			fmt.Print(err)
 			return false
 		}
+		prevBlock = currentBlock
 	}
 	return true
 }
 
 func isBlockPairValid(prevBlock, nextBlock *Block) error {
 	nextBlockHash := hashBlock(nextBlock)
-
 	if nextBlockHash != nextBlock.Hash {
-		return fmt.Errorf("ERORR: Hashes does not match. %s != %s\n", nextBlock.Hash, nextBlockHash)
+		return fmt.Errorf(
+			"ERROR: Block hash mismatch for Block #%d. Stored hash: %s, Re-computed hash: %s. Block details: %v\n",
+			nextBlock.Index, nextBlock.Hash, nextBlockHash, nextBlock,
+		)
 	}
 
 	if prevBlock.Hash != *nextBlock.PrevHash {
-		return fmt.Errorf("ERORR: NextBlock hash does not match PrevBlock hash\n .")
+		return fmt.Errorf(
+			"ERROR: Previous hash mismatch for Block #%d. Expected PrevHash (from prev block #%d): %s, Got PrevHash (in current block): %s\n",
+			nextBlock.Index, prevBlock.Index, prevBlock.Hash, *nextBlock.PrevHash,
+		)
 	}
 
 	if prevBlock.Index != nextBlock.Index-1 {
-		return fmt.Errorf("ERORR: Indexes don't match.\n")
+		return fmt.Errorf(
+			"ERROR: Block index sequence mismatch. Previous block #%d, Next block #%d. Expected Next block to be #%d\n",
+			prevBlock.Index, nextBlock.Index, prevBlock.Index+1,
+		)
 	}
 
 	return nil
