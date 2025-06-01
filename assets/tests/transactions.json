@@ -1,0 +1,14 @@
+{
+  "transactions": [
+    {
+      "from": "me",
+      "to": "guy",
+      "amount": 12
+    },
+    {
+      "from": "another guy",
+      "to": "guy",
+      "amount": 67
+    }
+  ]
+}
