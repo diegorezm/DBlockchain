@@ -5,11 +5,14 @@ import (
 	"crypto/sha256"
 	"encoding/gob"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
-	"github.com/diegorezm/DBlockchain/internals/set"
+	"io"
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/diegorezm/DBlockchain/internals/set"
 )
 
 type Blockchain struct {
@@ -38,7 +41,7 @@ func (b *Blockchain) AppendBlock() error {
 	}
 
 	newBlockInsert := BlockInsert{
-		PrevHash: &lastBlock.Hash,
+		PrevHash: lastBlock.Hash,
 		Index:    lastBlock.Index + 1,
 		Data:     b.transactions,
 	}
@@ -90,21 +93,22 @@ func (b *Blockchain) GetTransactions() []Transaction {
 func (b *Blockchain) replaceChain() bool {
 	replacementChain := []Block{}
 	maxChainLen := len(b.chain)
+	nodesSlice := b.nodes.ToSlice()
 
-	b.nodes.ForEach(func(key Node) {
+	for _, key := range nodesSlice {
 		url := key.Address.String()
 		chain, err := GetBlockchainFromNode(url)
 
 		if err != nil {
-			fmt.Printf("%s", err.Error())
-			return
+			fmt.Printf("ERROR: something went wrong while connecting to node %s. %s\n", url, err.Error())
+			return false
 		}
 
 		if len(chain) > maxChainLen {
 			maxChainLen = len(chain)
 			replacementChain = chain
 		}
-	})
+	}
 
 	if len(replacementChain) > 0 && isChainValid(replacementChain) {
 		b.chain = replacementChain
@@ -113,21 +117,33 @@ func (b *Blockchain) replaceChain() bool {
 	return false
 }
 
-func GetBlockchainFromNode(reqUrl string) ([]Block, error) {
+func GetBlockchainFromNode(address string) ([]Block, error) {
+	reqUrl := fmt.Sprintf("%s/chain", address)
+	fmt.Printf("Sending request to: %s\n", reqUrl)
+
 	res, err := http.Get(reqUrl)
+
+	if res.StatusCode != http.StatusOK {
+		bodyBytes, _ := io.ReadAll(res.Body)
+		return nil, fmt.Errorf("received non-OK status %d from %s: %s", res.StatusCode, reqUrl, string(bodyBytes))
+	}
+
 	if err != nil {
 		return []Block{}, err
 	}
 
 	defer res.Body.Close()
 
-	var chain []Block
-
-	dec := gob.NewDecoder(res.Body)
-	err = dec.Decode(&chain)
+	bodyBytes, err := io.ReadAll(res.Body)
 
 	if err != nil {
 		return []Block{}, err
+	}
+
+	var chain []Block
+	err = json.Unmarshal(bodyBytes, &chain)
+	if err != nil {
+		return nil, fmt.Errorf("failed to unmarshal chain from %s: %w", reqUrl, err)
 	}
 
 	return chain, nil
@@ -182,10 +198,10 @@ func isBlockPairValid(prevBlock, nextBlock *Block) error {
 		)
 	}
 
-	if prevBlock.Hash != *nextBlock.PrevHash {
+	if prevBlock.Hash != nextBlock.PrevHash {
 		return fmt.Errorf(
 			"ERROR: Previous hash mismatch for Block #%d. Expected PrevHash (from prev block #%d): %s, Got PrevHash (in current block): %s\n",
-			nextBlock.Index, prevBlock.Index, prevBlock.Hash, *nextBlock.PrevHash,
+			nextBlock.Index, prevBlock.Index, prevBlock.Hash, nextBlock.PrevHash,
 		)
 	}
 
@@ -201,7 +217,7 @@ func isBlockPairValid(prevBlock, nextBlock *Block) error {
 
 func generateGenesis() *Block {
 	newBlockInsert := BlockInsert{
-		PrevHash: nil,
+		PrevHash: "",
 		Index:    0,
 		Data:     make([]Transaction, 0),
 	}
@@ -215,7 +231,7 @@ type blockHeader struct {
 	Index     uint64
 	Timestamp int64
 	Data      []Transaction
-	PrevHash  *string
+	PrevHash  string
 	Nonce     uint64
 }
 
@@ -232,8 +248,9 @@ func hashBlock(b *Block) string {
 
 	enc := gob.NewEncoder(&buf)
 	err := enc.Encode(header)
+
 	if err != nil {
-		panic(fmt.Sprintf("Failed to gob encode block header for hashing: %v", err))
+		panic(fmt.Sprintf("Failed to gob encode block header for hashing: %v\n", err))
 	}
 	sum := sha256.Sum256(buf.Bytes())
 	hashSlice := sum[:]

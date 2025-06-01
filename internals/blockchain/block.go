@@ -3,7 +3,7 @@ package blockchain
 type BlockInsert struct {
 	Index    uint64        `json:"index"`    // The of this block in the blockchain
 	Data     []Transaction `json:"data"`     // The transactions inside of the block
-	PrevHash *string       `json:"prevHash"` // The hash of the previous block
+	PrevHash string        `json:"prevHash"` // The hash of the previous block
 }
 
 type Block struct {

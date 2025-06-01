@@ -2,17 +2,19 @@
 package set
 
 type Set[K comparable] struct {
-	internal map[K]struct{}
+	internal map[K]bool
 }
 
 func NewSet[K comparable]() *Set[K] {
 	return &Set[K]{
-		internal: make(map[K]struct{}),
+		internal: make(map[K]bool),
 	}
 }
 
 func (s *Set[K]) Add(key K) {
-	s.internal[key] = struct{}{}
+	if !s.internal[key] {
+		s.internal[key] = true
+	}
 }
 
 func (s *Set[K]) Delete(key K) {
