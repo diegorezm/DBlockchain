@@ -1,18 +1,21 @@
-APP_API_MAIN_PATH=./cmd/api/main.go
-APP_OUTPUT_PATH=./bin/Dblockchain
+CLIENT_PATH=./cmd/client/main.go
+CLIENT_OUTPUT_PATH=./bin/Dblockchain
+
+SERVER_PATH=./cmd/server/main.go
+	SERVER_OUTPUT_PATH=./bin/Dblockchain_server
 
 clean:
 	@rm -rf bin
 
 build:
-	@go build -o $(APP_OUTPUT_PATH) $(APP_API_MAIN_PATH)
-	@chmod +x $(APP_OUTPUT_PATH)
+	@go build -o $(CLIENT_OUTPUT_PATH) $(CLIENT_PATH)
+	@chmod +x $(CLIENT_OUTPUT_PATH)
 	@echo "build done"
 
 test:
 	go test ./...
 
 run: build
-	@$(APP_OUTPUT_PATH)
+	@$(CLIENT_OUTPUT_PATH)
 
 .PHONY: clean build run
