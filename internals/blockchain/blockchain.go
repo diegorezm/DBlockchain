@@ -5,32 +5,33 @@ import (
 	"crypto/sha256"
 	"encoding/gob"
 	"encoding/hex"
-	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 	"strings"
 	"time"
 
-	"github.com/diegorezm/DBlockchain/internals/set"
+	webutils "github.com/diegorezm/DBlockchain/internals/web_utils"
 )
 
 type Blockchain struct {
 	chain        []Block
 	transactions []Transaction
-	nodes        set.Set[Node]
 	difficulty   uint32
+	serverUrl    string
+	currentNode  string
 }
 
-func NewBlockchain() *Blockchain {
+func NewBlockchain(currentNode string) *Blockchain {
 	chain := make([]Block, 1)
 	chain[0] = *generateGenesis()
 
 	return &Blockchain{
 		chain:        chain,
 		transactions: make([]Transaction, 0),
-		nodes:        *set.NewSet[Node](),
 		difficulty:   2,
+		serverUrl:    "http://localhost:4040",
+		currentNode:  currentNode,
 	}
 }
 
@@ -67,17 +68,6 @@ func (b *Blockchain) AppendTransaction(transactionInsert TransactionInsert) {
 	b.transactions = append(b.transactions, *transaction)
 }
 
-func (b *Blockchain) AppendNode(addr string) {
-	node, err := NewNode(addr)
-
-	if err != nil {
-		fmt.Printf("ERROR: %s", err)
-		return
-	}
-
-	b.nodes.Add(*node)
-}
-
 func (b *Blockchain) GetLastBlock() *Block {
 	return &b.chain[len(b.chain)-1]
 }
@@ -90,19 +80,23 @@ func (b *Blockchain) GetTransactions() []Transaction {
 	return b.transactions
 }
 
-func (b *Blockchain) replaceChain() bool {
+func (b *Blockchain) replaceChain() (bool, error) {
 	replacementChain := []Block{}
 	maxChainLen := len(b.chain)
-	nodesSlice := b.nodes.ToSlice()
+	nodes, err := getConnectedNodes(b.serverUrl)
 
-	for _, key := range nodesSlice {
-		url := key.Address.String()
-		chain, err := GetBlockchainFromNode(url)
+	if err != nil {
+		return false, err
+	}
+
+	for _, address := range nodes {
+		chain, err := getBlockchainFromNode(address)
 
 		if err != nil {
-			fmt.Printf("ERROR: something went wrong while connecting to node %s. %s\n", url, err.Error())
-			return false
+			return false, fmt.Errorf("ERROR: something went wrong while connecting to node %s. %s\n", address, err.Error())
 		}
+
+		//fmt.Printf("Node: %s. Chain: %v\n", address, chain)
 
 		if len(chain) > maxChainLen {
 			maxChainLen = len(chain)
@@ -112,47 +106,58 @@ func (b *Blockchain) replaceChain() bool {
 
 	if len(replacementChain) > 0 && isChainValid(replacementChain) {
 		b.chain = replacementChain
-		return true
+		return true, nil
 	}
-	return false
+	return false, nil
 }
 
-func GetBlockchainFromNode(address string) ([]Block, error) {
+func getConnectedNodes(serverUrl string) ([]string, error) {
+	reqUrl := fmt.Sprintf("%s/nodes", serverUrl)
+
+	res, err := http.Get(reqUrl)
+
+	if res.StatusCode != http.StatusOK {
+		bodyBytes, _ := io.ReadAll(res.Body)
+		defer res.Body.Close()
+		return nil, fmt.Errorf("received non-OK status %d from %s: %s", res.StatusCode, reqUrl, string(bodyBytes))
+	}
+
+	if err != nil {
+		defer res.Body.Close()
+		return []string{}, err
+	}
+
+	response, err := webutils.ParseJSON[webutils.JSONResponse[[]string]](res.Body)
+
+	if err != nil {
+		return []string{}, err
+	}
+	return response.Data, nil
+}
+
+func getBlockchainFromNode(address string) ([]Block, error) {
 	reqUrl := fmt.Sprintf("%s/chain", address)
 	fmt.Printf("Sending request to: %s\n", reqUrl)
 
 	res, err := http.Get(reqUrl)
 
 	if res.StatusCode != http.StatusOK {
+		defer res.Body.Close()
 		bodyBytes, _ := io.ReadAll(res.Body)
 		return nil, fmt.Errorf("received non-OK status %d from %s: %s", res.StatusCode, reqUrl, string(bodyBytes))
 	}
 
 	if err != nil {
+		defer res.Body.Close()
 		return []Block{}, err
 	}
 
-	defer res.Body.Close()
-
-	bodyBytes, err := io.ReadAll(res.Body)
+	response, err := webutils.ParseJSON[webutils.JSONResponse[[]Block]](res.Body)
 
 	if err != nil {
 		return []Block{}, err
 	}
-
-	var chain []Block
-	err = json.Unmarshal(bodyBytes, &chain)
-	if err != nil {
-		return nil, fmt.Errorf("failed to unmarshal chain from %s: %w", reqUrl, err)
-	}
-
-	return chain, nil
-}
-
-// I don't like the fact that this returns a list of pointers
-// but i might just be stupid
-func (b *Blockchain) getNodes() []Node {
-	return b.nodes.ToSlice()
+	return response.Data, nil
 }
 
 // This function mines the chain untils it finds a valid block, when this block is found
