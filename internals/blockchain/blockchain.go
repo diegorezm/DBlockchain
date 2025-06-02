@@ -149,6 +149,8 @@ func GetBlockchainFromNode(address string) ([]Block, error) {
 	return chain, nil
 }
 
+// I don't like the fact that this returns a list of pointers
+// but i might just be stupid
 func (b *Blockchain) getNodes() []Node {
 	return b.nodes.ToSlice()
 }
