@@ -12,7 +12,8 @@ func NewSet[K comparable]() *Set[K] {
 }
 
 func (s *Set[K]) Add(key K) {
-	if !s.internal[key] {
+	_, ok := s.internal[key]
+	if !ok {
 		s.internal[key] = true
 	}
 }

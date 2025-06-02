@@ -132,3 +132,33 @@ func TestSet_Size(t *testing.T) {
 		})
 	}
 }
+
+func TestSet_AddStruct(t *testing.T) {
+	type items struct {
+		name string
+	}
+
+	tests := []struct {
+		name  string
+		items []items
+		want  int
+	}{
+		{
+			name:  "Test if the length is correct.",
+			items: []items{{"a"}, {"b"}, {"c"}, {"d"}, {"d"}},
+			want:  4,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := NewSet[items]()
+			for _, i := range tt.items {
+				s.Add(i)
+			}
+			if s.Size() != tt.want {
+				t.Errorf("The set does not comply with the expected length of %d. got %d\n", tt.want, s.Size())
+			}
+		})
+	}
+}
