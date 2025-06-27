@@ -43,6 +43,8 @@ func main() {
 func registerHandlers(mux *http.ServeMux, blockchain *bl.Blockchain) {
 	blockchainHandler := bl.NewClientHandler(blockchain)
 
+	mux.Handle("GET /", http.HandlerFunc(blockchainHandler.GetIndexPage))
+
 	mux.Handle("GET /chain", http.HandlerFunc(blockchainHandler.GetChain))
 	mux.Handle("GET /chain/is_valid", http.HandlerFunc(blockchainHandler.IsValid))
 	mux.Handle("GET /chain/replace", http.HandlerFunc(blockchainHandler.ReplaceChain))

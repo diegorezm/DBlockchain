@@ -19,7 +19,8 @@ type Blockchain struct {
 	transactions []Transaction
 	difficulty   uint32
 	serverUrl    string
-	currentNode  string
+	// Current Node indicates the IP of the current client in the blockchain
+	currentNode string
 }
 
 func NewBlockchain(currentNode string) *Blockchain {

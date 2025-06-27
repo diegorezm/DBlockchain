@@ -1,0 +1,7 @@
+{
+  "componentsDir": "./internals/frontend/components",
+  "utilsDir": "./internals/frontend/utils",
+  "moduleName": "github.com/diegorezm/DBlockchain",
+  "jsDir": "./internals/frontend/js",
+  "jsPublicPath": "/./internals/frontend/js"
+}

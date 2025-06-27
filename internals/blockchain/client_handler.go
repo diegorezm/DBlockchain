@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/diegorezm/DBlockchain/internals/frontend/pages"
 	webutils "github.com/diegorezm/DBlockchain/internals/web_utils"
 )
 
@@ -12,18 +13,21 @@ type ClientHandler struct {
 	blockchain *Blockchain
 }
 
-// NewClientHandler creates and returns a new ClientHandler.
 func NewClientHandler(blockchain *Blockchain) *ClientHandler {
 	return &ClientHandler{blockchain: blockchain}
 }
 
-// GetChain handles requests to retrieve the entire blockchain.
+func (h *ClientHandler) GetIndexPage(w http.ResponseWriter, r *http.Request) {
+	index := pages.Index()
+	ctx := r.Context()
+	index.Render(ctx, w)
+}
+
 func (h *ClientHandler) GetChain(w http.ResponseWriter, r *http.Request) {
-	chain := h.blockchain.GetChain() // Assuming GetChain() method exists on Blockchain
+	chain := h.blockchain.GetChain()
 	webutils.WriteSuccess(w, chain, "Blockchain retrieved successfully")
 }
 
-// Mine handles requests to mine a new block.
 func (h *ClientHandler) Mine(w http.ResponseWriter, r *http.Request) {
 	if err := h.blockchain.AppendBlock(); err != nil {
 		webutils.WriteInternalServerError(w, fmt.Sprintf("Failed to mine new block: %v", err))
@@ -32,7 +36,6 @@ func (h *ClientHandler) Mine(w http.ResponseWriter, r *http.Request) {
 	webutils.WriteJSON[any](w, http.StatusCreated, nil, "New block mined successfully!")
 }
 
-// IsValid checks if the blockchain is valid.
 func (h *ClientHandler) IsValid(w http.ResponseWriter, r *http.Request) {
 	valid := isChainValid(h.blockchain.chain)
 
@@ -42,7 +45,6 @@ func (h *ClientHandler) IsValid(w http.ResponseWriter, r *http.Request) {
 	webutils.WriteSuccess(w, respData, "Blockchain validation status.")
 }
 
-// AddTransaction handles adding a single new transaction.
 func (h *ClientHandler) AddTransaction(w http.ResponseWriter, r *http.Request) {
 	var transactionInsert TransactionInsert
 	if err := json.NewDecoder(r.Body).Decode(&transactionInsert); err != nil {
@@ -53,7 +55,6 @@ func (h *ClientHandler) AddTransaction(w http.ResponseWriter, r *http.Request) {
 	webutils.WriteJSON[any](w, http.StatusCreated, nil, "Transaction added successfully.")
 }
 
-// AddTransactionBulk handles adding multiple transactions in a single request.
 func (h *ClientHandler) AddTransactionBulk(w http.ResponseWriter, r *http.Request) {
 	var transactionBulkRequest TransactionBulkRequest
 
@@ -63,15 +64,14 @@ func (h *ClientHandler) AddTransactionBulk(w http.ResponseWriter, r *http.Reques
 	}
 
 	for _, t := range transactionBulkRequest.Transactions {
-		h.blockchain.AppendTransaction(t) // Assuming AppendTransaction can handle TransactionInsert
+		h.blockchain.AppendTransaction(t)
 	}
 
 	webutils.WriteJSON[any](w, http.StatusCreated, nil, "Transactions added successfully.")
 }
 
-// ReplaceChain handles replacing the current blockchain with a longer, valid one from peers.
 func (h *ClientHandler) ReplaceChain(w http.ResponseWriter, r *http.Request) {
-	replaced, err := h.blockchain.replaceChain() // Assuming ReplaceChain() method exists on Blockchain
+	replaced, err := h.blockchain.replaceChain()
 	if err != nil {
 		webutils.WriteInternalServerError(w, fmt.Sprintf("Failed to replace chain: %v", err))
 		return
