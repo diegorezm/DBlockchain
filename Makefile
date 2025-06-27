@@ -25,7 +25,7 @@ run: build
 	@$(CLIENT_OUTPUT_PATH)
 
 templ:
-	go tool templ generate --watch --proxy="http://localhost:8090" --open-browser=false
+	go tool templ generate --watch --proxy="http://localhost:3000" --open-browser=false
 
 server:
 	go tool air \
@@ -33,12 +33,12 @@ server:
 		--build.bin "tmp/bin/main" \
 		--build.delay "100" \
 		--build.exclude_dir "node_modules" \
-		--build.include_ext "go" \
+    --build.include_ext "go,css,js" \
 		--build.stop_on_error "false" \
 		--misc.clean_on_exit true  
 
 tailwind:
-	npx @tailwindcss/cli -i ./internals/frontend/styles/input.css -o ./internals/frontend/styles/style.css --watch
+	npx @tailwindcss/cli -i ./internals/frontend/static/input.css -o ./internals/frontend/assets/style.css --watch
 
 dev:
 	make -j3 tailwind templ server

@@ -2,10 +2,10 @@ package pages
 
 import "github.com/diegorezm/DBlockchain/internals/frontend/layout"
 
-templ Index() {
-	@layout.Layout() {
-		<p>
-			Testing
-		</p>
+templ Index(currentPath string) {
+	@layout.DashboardLayout(currentPath) {
+		<div class="p-2">
+			<h1>testing</h1>
+		</div>
 	}
 }

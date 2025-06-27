@@ -3,32 +3,24 @@ package blockchain
 import (
 	"encoding/json"
 	"fmt"
-	"net/http"
-
-	"github.com/diegorezm/DBlockchain/internals/frontend/pages"
 	webutils "github.com/diegorezm/DBlockchain/internals/web_utils"
+	"net/http"
 )
 
-type ClientHandler struct {
+type BlockchainHandler struct {
 	blockchain *Blockchain
 }
 
-func NewClientHandler(blockchain *Blockchain) *ClientHandler {
-	return &ClientHandler{blockchain: blockchain}
+func NewBlockchainHandler(blockchain *Blockchain) *BlockchainHandler {
+	return &BlockchainHandler{blockchain: blockchain}
 }
 
-func (h *ClientHandler) GetIndexPage(w http.ResponseWriter, r *http.Request) {
-	index := pages.Index()
-	ctx := r.Context()
-	index.Render(ctx, w)
-}
-
-func (h *ClientHandler) GetChain(w http.ResponseWriter, r *http.Request) {
+func (h *BlockchainHandler) GetChain(w http.ResponseWriter, r *http.Request) {
 	chain := h.blockchain.GetChain()
 	webutils.WriteSuccess(w, chain, "Blockchain retrieved successfully")
 }
 
-func (h *ClientHandler) Mine(w http.ResponseWriter, r *http.Request) {
+func (h *BlockchainHandler) Mine(w http.ResponseWriter, r *http.Request) {
 	if err := h.blockchain.AppendBlock(); err != nil {
 		webutils.WriteInternalServerError(w, fmt.Sprintf("Failed to mine new block: %v", err))
 		return
@@ -36,7 +28,7 @@ func (h *ClientHandler) Mine(w http.ResponseWriter, r *http.Request) {
 	webutils.WriteJSON[any](w, http.StatusCreated, nil, "New block mined successfully!")
 }
 
-func (h *ClientHandler) IsValid(w http.ResponseWriter, r *http.Request) {
+func (h *BlockchainHandler) IsValid(w http.ResponseWriter, r *http.Request) {
 	valid := isChainValid(h.blockchain.chain)
 
 	respData := map[string]bool{
@@ -45,7 +37,7 @@ func (h *ClientHandler) IsValid(w http.ResponseWriter, r *http.Request) {
 	webutils.WriteSuccess(w, respData, "Blockchain validation status.")
 }
 
-func (h *ClientHandler) AddTransaction(w http.ResponseWriter, r *http.Request) {
+func (h *BlockchainHandler) AddTransaction(w http.ResponseWriter, r *http.Request) {
 	var transactionInsert TransactionInsert
 	if err := json.NewDecoder(r.Body).Decode(&transactionInsert); err != nil {
 		webutils.WriteBadRequest(w, fmt.Sprintf("Invalid request payload: %v", err))
@@ -55,7 +47,7 @@ func (h *ClientHandler) AddTransaction(w http.ResponseWriter, r *http.Request) {
 	webutils.WriteJSON[any](w, http.StatusCreated, nil, "Transaction added successfully.")
 }
 
-func (h *ClientHandler) AddTransactionBulk(w http.ResponseWriter, r *http.Request) {
+func (h *BlockchainHandler) AddTransactionBulk(w http.ResponseWriter, r *http.Request) {
 	var transactionBulkRequest TransactionBulkRequest
 
 	if err := json.NewDecoder(r.Body).Decode(&transactionBulkRequest); err != nil {
@@ -70,7 +62,7 @@ func (h *ClientHandler) AddTransactionBulk(w http.ResponseWriter, r *http.Reques
 	webutils.WriteJSON[any](w, http.StatusCreated, nil, "Transactions added successfully.")
 }
 
-func (h *ClientHandler) ReplaceChain(w http.ResponseWriter, r *http.Request) {
+func (h *BlockchainHandler) ReplaceChain(w http.ResponseWriter, r *http.Request) {
 	replaced, err := h.blockchain.replaceChain()
 	if err != nil {
 		webutils.WriteInternalServerError(w, fmt.Sprintf("Failed to replace chain: %v", err))
@@ -91,6 +83,6 @@ func (h *ClientHandler) ReplaceChain(w http.ResponseWriter, r *http.Request) {
 	webutils.WriteSuccess(w, respData, message)
 }
 
-func (s *ClientHandler) PingHandler(w http.ResponseWriter, r *http.Request) {
+func (s *BlockchainHandler) PingHandler(w http.ResponseWriter, r *http.Request) {
 	webutils.WriteSuccess[any](w, nil, "Pong!")
 }

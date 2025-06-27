@@ -1,0 +1,39 @@
+package sidebar
+
+type link struct {
+	href  string
+	title string
+}
+
+templ Sidebar(currentPath string) {
+	{{links := []link{
+	{href: "/wallet", title: "Wallet"},
+	{href: "/blocks", title: "Blocks"},
+	{href: "/transactions", title: "Transactions"}}
+	}}
+	<aside class="w-[220px] h-screen bg-gray-200 p-2">
+		<ul class="flex flex-col gap-3 w-full mt-4 ">
+			for _, link := range links {
+				{{ isCurrentPath := link.href == currentPath }}
+				<li class="w-full">
+					<a
+						href={ templ.URL(link.href) }
+						class={ "block px-2 py-1 w-full h-full rounded-md text-lg font-semibold transition-colors duration-150" ,
+        getActiveLinkStyles(isCurrentPath) }
+					>
+						<span>
+							{ link.title }
+						</span>
+					</a>
+				</li>
+			}
+		</ul>
+	</aside>
+}
+
+func getActiveLinkStyles(isActive bool) string {
+	if isActive {
+		return "bg-primary text-primary-foreground"
+	}
+	return "border border-primary hover:bg-primary hover:text-primary-foreground"
+}

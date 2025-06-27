@@ -137,7 +137,7 @@ func getConnectedNodes(serverUrl string) ([]string, error) {
 }
 
 func getBlockchainFromNode(address string) ([]Block, error) {
-	reqUrl := fmt.Sprintf("%s/chain", address)
+	reqUrl := fmt.Sprintf("%s/api/chain", address)
 	fmt.Printf("Sending request to: %s\n", reqUrl)
 
 	res, err := http.Get(reqUrl)

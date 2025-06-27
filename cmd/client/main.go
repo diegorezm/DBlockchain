@@ -8,6 +8,7 @@ import (
 	"net/http"
 
 	bl "github.com/diegorezm/DBlockchain/internals/blockchain"
+	"github.com/diegorezm/DBlockchain/internals/frontend"
 	webutils "github.com/diegorezm/DBlockchain/internals/web_utils"
 )
 
@@ -41,17 +42,21 @@ func main() {
 }
 
 func registerHandlers(mux *http.ServeMux, blockchain *bl.Blockchain) {
-	blockchainHandler := bl.NewClientHandler(blockchain)
+	blockchainHandler := bl.NewBlockchainHandler(blockchain)
+	frontendHandler := frontend.NewFrontendHandler()
 
-	mux.Handle("GET /", http.HandlerFunc(blockchainHandler.GetIndexPage))
+	// PAGES ROUTES
+	mux.Handle("GET /", http.HandlerFunc(frontendHandler.GetIndexPage))
+	mux.Handle("GET /assets/", http.HandlerFunc(frontendHandler.GetAssets))
 
-	mux.Handle("GET /chain", http.HandlerFunc(blockchainHandler.GetChain))
-	mux.Handle("GET /chain/is_valid", http.HandlerFunc(blockchainHandler.IsValid))
-	mux.Handle("GET /chain/replace", http.HandlerFunc(blockchainHandler.ReplaceChain))
-	mux.Handle("POST /chain/mine", http.HandlerFunc(blockchainHandler.Mine))
+	// API ROUTES
+	mux.Handle("GET /api/chain", http.HandlerFunc(blockchainHandler.GetChain))
+	mux.Handle("GET /api/chain/is_valid", http.HandlerFunc(blockchainHandler.IsValid))
+	mux.Handle("GET /api/chain/replace", http.HandlerFunc(blockchainHandler.ReplaceChain))
+	mux.Handle("POST /api/chain/mine", http.HandlerFunc(blockchainHandler.Mine))
 
-	mux.Handle("POST /transactions/add", http.HandlerFunc(blockchainHandler.AddTransaction))
-	mux.Handle("POST /transactions/add/bulk", http.HandlerFunc(blockchainHandler.AddTransactionBulk))
+	mux.Handle("POST /api/transactions/add", http.HandlerFunc(blockchainHandler.AddTransaction))
+	mux.Handle("POST /api/transactions/add/bulk", http.HandlerFunc(blockchainHandler.AddTransactionBulk))
 
 	mux.Handle("GET /ping", http.HandlerFunc(blockchainHandler.PingHandler))
 }
