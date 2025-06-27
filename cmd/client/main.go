@@ -47,6 +47,9 @@ func registerHandlers(mux *http.ServeMux, blockchain *bl.Blockchain) {
 
 	// PAGES ROUTES
 	mux.Handle("GET /", http.HandlerFunc(frontendHandler.GetIndexPage))
+	mux.Handle("GET /wallet", http.HandlerFunc(frontendHandler.GetWalletPage))
+	mux.Handle("GET /blocks", http.HandlerFunc(frontendHandler.GetBlocksPage))
+	mux.Handle("GET /transactions", http.HandlerFunc(frontendHandler.GetTransactionsPage))
 	mux.Handle("GET /assets/", http.HandlerFunc(frontendHandler.GetAssets))
 
 	// API ROUTES

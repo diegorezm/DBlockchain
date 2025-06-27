@@ -8,9 +8,12 @@ package sidebar
 import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
+import "github.com/diegorezm/DBlockchain/internals/frontend/components/icons"
+
 type link struct {
 	href  string
 	title string
+	icon  string
 }
 
 func Sidebar(currentPath string) templ.Component {
@@ -34,22 +37,17 @@ func Sidebar(currentPath string) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		links := []link{
-			{href: "/wallet", title: "Wallet"},
-			{href: "/blocks", title: "Blocks"},
-			{href: "/transactions", title: "Transactions"}}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<aside class=\"w-[220px] h-screen bg-gray-200 p-2\"><ul class=\"flex flex-col gap-3 w-full mt-4 \">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<aside class=\"w-[220px] h-screen  px-2 py-4 border-r-2 border-surface\"><ul class=\"flex flex-col gap-3 w-full  \">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		for _, link := range links {
+		for _, link := range getLinksToRender() {
 			isCurrentPath := link.href == currentPath
 			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<li class=\"w-full\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			var templ_7745c5c3_Var2 = []any{"block px-2 py-1 w-full h-full rounded-md text-lg font-semibold transition-colors duration-150",
-				getActiveLinkStyles(isCurrentPath)}
+			var templ_7745c5c3_Var2 = []any{getLinkStyles(), getActiveLinkStyles(isCurrentPath)}
 			templ_7745c5c3_Err = templ.RenderCSSItems(ctx, templ_7745c5c3_Buffer, templ_7745c5c3_Var2...)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
@@ -61,7 +59,7 @@ func Sidebar(currentPath string) templ.Component {
 			var templ_7745c5c3_Var3 templ.SafeURL
 			templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinURLErrs(templ.URL(link.href))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internals/frontend/components/sidebar/sidebar.templ`, Line: 20, Col: 33}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internals/frontend/components/sidebar/sidebar.templ`, Line: 17, Col: 35}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 			if templ_7745c5c3_Err != nil {
@@ -80,20 +78,26 @@ func Sidebar(currentPath string) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "\"><span>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "\">")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = icons.GetIconFromString(link.icon)(icons.Props{
+				Size: 20,
+			}).Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var5 string
 			templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(link.title)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internals/frontend/components/sidebar/sidebar.templ`, Line: 25, Col: 19}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internals/frontend/components/sidebar/sidebar.templ`, Line: 21, Col: 18}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "</span></a></li>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "</a></li>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -106,11 +110,28 @@ func Sidebar(currentPath string) templ.Component {
 	})
 }
 
+// i have to do this because the templ autoformat breaks the code all the time
+// i have no idea why
+// i am not going to fix it
+func getLinkStyles() string {
+	styles := "flex justify-center items-center px-2 py-1 w-full h-full rounded-lg text-lg font-semibold transition-colors"
+	styles += "duration-150 gap-2"
+	return styles
+}
+
+func getLinksToRender() []link {
+	return []link{
+		{href: "/wallet", title: "Wallet", icon: "wallet"},
+		{href: "/blocks", title: "Blocks", icon: "blocks"},
+		{href: "/transactions", title: "Transactions", icon: "clock"},
+	}
+}
+
 func getActiveLinkStyles(isActive bool) string {
 	if isActive {
 		return "bg-primary text-primary-foreground"
 	}
-	return "border border-primary hover:bg-primary hover:text-primary-foreground"
+	return "text-on-surface bg-surface hover:bg-primary hover:text-primary-foreground"
 }
 
 var _ = templruntime.GeneratedTemplate

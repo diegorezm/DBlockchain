@@ -1,29 +1,24 @@
 package sidebar
 
+import "github.com/diegorezm/DBlockchain/internals/frontend/components/icons"
+
 type link struct {
 	href  string
 	title string
+	icon  string
 }
 
 templ Sidebar(currentPath string) {
-	{{links := []link{
-	{href: "/wallet", title: "Wallet"},
-	{href: "/blocks", title: "Blocks"},
-	{href: "/transactions", title: "Transactions"}}
-	}}
-	<aside class="w-[220px] h-screen bg-gray-200 p-2">
-		<ul class="flex flex-col gap-3 w-full mt-4 ">
-			for _, link := range links {
+	<aside class="w-[220px] h-screen  px-2 py-4 border-r-2 border-surface">
+		<ul class="flex flex-col gap-3 w-full  ">
+			for _, link := range getLinksToRender() {
 				{{ isCurrentPath := link.href == currentPath }}
 				<li class="w-full">
-					<a
-						href={ templ.URL(link.href) }
-						class={ "block px-2 py-1 w-full h-full rounded-md text-lg font-semibold transition-colors duration-150" ,
-        getActiveLinkStyles(isCurrentPath) }
-					>
-						<span>
-							{ link.title }
-						</span>
+					<a href={ templ.URL(link.href) } class={ getLinkStyles(), getActiveLinkStyles(isCurrentPath) }>
+						@icons.GetIconFromString(link.icon)(icons.Props{
+							Size: 20,
+						})
+						{ link.title }
 					</a>
 				</li>
 			}
@@ -31,9 +26,26 @@ templ Sidebar(currentPath string) {
 	</aside>
 }
 
+// i have to do this because the templ autoformat breaks the code all the time
+// i have no idea why
+// i am not going to fix it
+func getLinkStyles() string {
+	styles := "flex justify-center items-center px-2 py-1 w-full h-full rounded-lg text-lg font-semibold transition-colors"
+	styles += "duration-150 gap-2"
+	return styles
+}
+
+func getLinksToRender() []link {
+	return []link{
+		{href: "/wallet", title: "Wallet", icon: "wallet"},
+		{href: "/blocks", title: "Blocks", icon: "blocks"},
+		{href: "/transactions", title: "Transactions", icon: "clock"},
+	}
+}
+
 func getActiveLinkStyles(isActive bool) string {
 	if isActive {
 		return "bg-primary text-primary-foreground"
 	}
-	return "border border-primary hover:bg-primary hover:text-primary-foreground"
+	return "text-on-surface bg-surface hover:bg-primary hover:text-primary-foreground"
 }
