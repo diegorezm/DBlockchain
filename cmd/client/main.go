@@ -9,11 +9,13 @@ import (
 
 	bl "github.com/diegorezm/DBlockchain/internals/blockchain"
 	"github.com/diegorezm/DBlockchain/internals/frontend"
-	webutils "github.com/diegorezm/DBlockchain/internals/web_utils"
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 )
 
 func main() {
-	mux := http.NewServeMux()
+	r := chi.NewRouter()
+	r.Use(middleware.Logger)
 
 	port := flag.Int("port", 3000, "Port to listen on (default 3000)")
 	flag.Parse()
@@ -33,35 +35,44 @@ func main() {
 	}
 
 	blockchain := bl.NewBlockchain(fullAddr)
-	registerHandlers(mux, blockchain)
-
-	loggedMux := webutils.LoggingMiddleware(mux)
+	registerHandlers(r, blockchain)
 
 	fmt.Printf("Client listening on port %s\n", addr)
-	log.Fatalf("%v", http.ListenAndServe(addr, loggedMux))
+	log.Fatalf("%v", http.ListenAndServe(addr, r))
 }
 
-func registerHandlers(mux *http.ServeMux, blockchain *bl.Blockchain) {
+func registerHandlers(r *chi.Mux, blockchain *bl.Blockchain) {
 	blockchainHandler := bl.NewBlockchainHandler(blockchain)
 	frontendHandler := frontend.NewFrontendHandler()
 
-	// PAGES ROUTES
-	mux.Handle("GET /", http.HandlerFunc(frontendHandler.GetIndexPage))
-	mux.Handle("GET /wallet", http.HandlerFunc(frontendHandler.GetWalletPage))
-	mux.Handle("GET /blocks", http.HandlerFunc(frontendHandler.GetBlocksPage))
-	mux.Handle("GET /transactions", http.HandlerFunc(frontendHandler.GetTransactionsPage))
-	mux.Handle("GET /assets/", http.HandlerFunc(frontendHandler.GetAssets))
+	// PAGES
+	r.Route("/", func(r chi.Router) {
+		r.Get("/", frontendHandler.GetIndexPage)
+		r.Get("/wallet", frontendHandler.GetWalletPage)
+		r.Get("/blocks", frontendHandler.GetBlocksPage)
+		r.Get("/transactions", frontendHandler.GetTransactionsPage)
+	})
 
-	// API ROUTES
-	mux.Handle("GET /api/chain", http.HandlerFunc(blockchainHandler.GetChain))
-	mux.Handle("GET /api/chain/is_valid", http.HandlerFunc(blockchainHandler.IsValid))
-	mux.Handle("GET /api/chain/replace", http.HandlerFunc(blockchainHandler.ReplaceChain))
-	mux.Handle("POST /api/chain/mine", http.HandlerFunc(blockchainHandler.Mine))
+	r.Route("/assets", func(r chi.Router) {
+		r.Use(middleware.StripSlashes)
+		fileServer := http.FileServer(http.Dir("./internals/frontend/assets"))
+		r.Handle("/*", http.StripPrefix("/assets", fileServer))
+	})
 
-	mux.Handle("POST /api/transactions/add", http.HandlerFunc(blockchainHandler.AddTransaction))
-	mux.Handle("POST /api/transactions/add/bulk", http.HandlerFunc(blockchainHandler.AddTransactionBulk))
+	// API
+	r.Route("/api", func(r chi.Router) {
+		r.Get("/chain", blockchainHandler.GetChain)
+		r.Get("/chain/is_valid", blockchainHandler.IsValid)
+		r.Get("/chain/replace", blockchainHandler.ReplaceChain)
+		r.Post("/chain/mine", blockchainHandler.Mine)
 
-	mux.Handle("GET /ping", http.HandlerFunc(blockchainHandler.PingHandler))
+		r.Post("/transactions/add", blockchainHandler.AddTransaction)
+		r.Post("/transactions/add/bulk", blockchainHandler.AddTransactionBulk)
+	})
+
+	// Other
+	r.Get("/ping", blockchainHandler.PingHandler)
+
 }
 
 func registerNode(serverAddr, nodeUrl string) error {

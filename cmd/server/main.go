@@ -6,20 +6,22 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/go-chi/chi/v5"
+
 	bl "github.com/diegorezm/DBlockchain/internals/blockchain"
-	webutils "github.com/diegorezm/DBlockchain/internals/web_utils"
 )
 
 func main() {
-	mux := http.NewServeMux()
+	r := chi.NewRouter()
 	handler := bl.NewServerHandler()
 
-	registerEndpoints(mux, handler)
+	registerEndpoints(r, handler)
 
 	port := 4040
 	addr := fmt.Sprintf(":%d", port)
 	fmt.Printf("Server listening on port %s\n", addr)
 
+	// Periodic ping
 	go func() {
 		ticker := time.NewTicker(60 * time.Second)
 		defer ticker.Stop()
@@ -28,15 +30,14 @@ func main() {
 		}
 	}()
 
-	loggedMux := webutils.LoggingMiddleware(mux)
-	log.Fatalf("%v", http.ListenAndServe(addr, loggedMux))
+	log.Fatalf("%v", http.ListenAndServe(addr, r))
 }
 
-func registerEndpoints(mux *http.ServeMux, handler *bl.ServerHandler) {
-	mux.Handle("GET /nodes", http.HandlerFunc(handler.GetNodes))
+func registerEndpoints(r chi.Router, handler *bl.ServerHandler) {
+	r.Get("/nodes", handler.GetNodes)
 
-	mux.Handle("POST /connect", http.HandlerFunc(handler.ConnectNode))
-	mux.Handle("POST /disconnect", http.HandlerFunc(handler.DisconnectNode))
+	r.Post("/connect", handler.ConnectNode)
+	r.Post("/disconnect", handler.DisconnectNode)
 
-	mux.Handle("POST /ping", http.HandlerFunc(handler.PingHandler))
+	r.Post("/ping", handler.PingHandler)
 }

@@ -21,6 +21,7 @@ require (
 	github.com/creack/pty v1.1.24 // indirect
 	github.com/fatih/color v1.18.0 // indirect
 	github.com/fsnotify/fsnotify v1.9.0 // indirect
+	github.com/go-chi/chi/v5 v5.2.2 // indirect
 	github.com/gobwas/glob v0.2.3 // indirect
 	github.com/gohugoio/hugo v0.147.6 // indirect
 	github.com/mattn/go-colorable v0.1.14 // indirect

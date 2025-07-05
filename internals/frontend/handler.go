@@ -1,6 +1,7 @@
 package frontend
 
 import (
+	"embed"
 	"net/http"
 
 	"github.com/diegorezm/DBlockchain/internals/frontend/pages"
@@ -8,7 +9,7 @@ import (
 )
 
 // //go:embed assets
-// var embdedAssets embed.FS
+var EmbdedAssets embed.FS
 
 type frontendHandler struct {
 }
@@ -43,8 +44,4 @@ func (h *frontendHandler) GetTransactionsPage(w http.ResponseWriter, r *http.Req
 	if err := transactionsPage.Render(ctx, w); err != nil {
 		webutils.WriteInternalServerError(w, err.Error())
 	}
-}
-
-func (h *frontendHandler) GetAssets(w http.ResponseWriter, r *http.Request) {
-	http.StripPrefix("/assets/", http.FileServer(http.Dir("./internals/frontend/assets"))).ServeHTTP(w, r)
 }
