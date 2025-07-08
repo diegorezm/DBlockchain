@@ -8,7 +8,8 @@ import (
 	"net/http"
 
 	bl "github.com/diegorezm/DBlockchain/internals/blockchain"
-	"github.com/diegorezm/DBlockchain/internals/frontend"
+	"github.com/diegorezm/DBlockchain/internals/handlers"
+	webutils "github.com/diegorezm/DBlockchain/internals/web_utils"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 )
@@ -42,8 +43,9 @@ func main() {
 }
 
 func registerHandlers(r *chi.Mux, blockchain *bl.Blockchain) {
-	blockchainHandler := bl.NewBlockchainHandler(blockchain)
-	frontendHandler := frontend.NewFrontendHandler()
+	blockchainHandler := handlers.NewBlockchainClientHandler(blockchain)
+	walletHandler := handlers.NewWalletHandler(blockchain)
+	frontendHandler := handlers.NewFrontendHandler()
 
 	// PAGES
 	r.Route("/", func(r chi.Router) {
@@ -53,25 +55,17 @@ func registerHandlers(r *chi.Mux, blockchain *bl.Blockchain) {
 		r.Get("/transactions", frontendHandler.GetTransactionsPage)
 	})
 
-	r.Route("/assets", func(r chi.Router) {
-		r.Use(middleware.StripSlashes)
-		fileServer := http.FileServer(http.Dir("./internals/frontend/assets"))
-		r.Handle("/*", http.StripPrefix("/assets", fileServer))
-	})
+	r.Route("/assets", frontendHandler.ServeAssets)
 
 	// API
 	r.Route("/api", func(r chi.Router) {
-		r.Get("/chain", blockchainHandler.GetChain)
-		r.Get("/chain/is_valid", blockchainHandler.IsValid)
-		r.Get("/chain/replace", blockchainHandler.ReplaceChain)
-		r.Post("/chain/mine", blockchainHandler.Mine)
-
-		r.Post("/transactions/add", blockchainHandler.AddTransaction)
-		r.Post("/transactions/add/bulk", blockchainHandler.AddTransactionBulk)
+		blockchainHandler.Register(r)
+		walletHandler.Register(r)
 	})
 
-	// Other
-	r.Get("/ping", blockchainHandler.PingHandler)
+	r.Get("/ping", func(w http.ResponseWriter, r *http.Request) {
+		webutils.WriteSuccess[any](w, nil, "Pong!")
+	})
 
 }
 

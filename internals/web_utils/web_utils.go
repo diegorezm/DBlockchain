@@ -14,7 +14,6 @@ import (
 // T is the type parameter, representing the expected structure of the JSON data.
 func ParseJSON[T any](body io.ReadCloser) (T, error) {
 	defer body.Close()
-
 	bodyBytes, err := io.ReadAll(body)
 	if err != nil {
 		var zeroValue T

@@ -11,16 +11,16 @@ import (
 	"strings"
 	"time"
 
+	"github.com/diegorezm/DBlockchain/internals/utils"
 	webutils "github.com/diegorezm/DBlockchain/internals/web_utils"
 )
 
 type Blockchain struct {
-	chain        []Block
-	transactions []Transaction
-	difficulty   uint32
-	serverUrl    string
-	// Current Node indicates the IP of the current client in the blockchain
-	currentNode string
+	Chain               []Block       `json:"chain"`
+	TransactionsMempool []Transaction `json:"transactions_mempool"` // the mempool: pending txs
+	Difficulty          uint32        `json:"difficulty"`
+	ServerUrl           string        `json:"server_url"`
+	CurrentNode         string        `json:"current_node"`
 }
 
 func NewBlockchain(currentNode string) *Blockchain {
@@ -28,11 +28,11 @@ func NewBlockchain(currentNode string) *Blockchain {
 	chain[0] = *generateGenesis()
 
 	return &Blockchain{
-		chain:        chain,
-		transactions: make([]Transaction, 0),
-		difficulty:   2,
-		serverUrl:    "http://localhost:4040",
-		currentNode:  currentNode,
+		Chain:               chain,
+		Difficulty:          2,
+		ServerUrl:           "http://localhost:4040",
+		CurrentNode:         currentNode,
+		TransactionsMempool: make([]Transaction, 0),
 	}
 }
 
@@ -45,7 +45,8 @@ func (b *Blockchain) AppendBlock() error {
 	newBlockInsert := BlockInsert{
 		PrevHash: lastBlock.Hash,
 		Index:    lastBlock.Index + 1,
-		Data:     b.transactions,
+		// TODO: Maybe i should add a way for the user to choose the transactions he wants to add
+		Transactions: b.TransactionsMempool,
 	}
 
 	blockToMine := NewBlock(newBlockInsert)
@@ -59,32 +60,123 @@ func (b *Blockchain) AppendBlock() error {
 		return err
 	}
 
-	b.chain = append(b.chain, *newBlock)
-	b.transactions = make([]Transaction, 0)
+	b.Chain = append(b.Chain, *newBlock)
+	b.TransactionsMempool = make([]Transaction, 0)
 	return nil
 }
 
-func (b *Blockchain) AppendTransaction(transactionInsert TransactionInsert) {
-	transaction := NewTransaction(transactionInsert)
-	b.transactions = append(b.transactions, *transaction)
-}
-
 func (b *Blockchain) GetLastBlock() *Block {
-	return &b.chain[len(b.chain)-1]
+	return &b.Chain[len(b.Chain)-1]
 }
 
 func (b *Blockchain) GetChain() []Block {
-	return b.chain
+	return b.Chain
 }
 
-func (b *Blockchain) GetTransactions() []Transaction {
-	return b.transactions
+func (b *Blockchain) AppendTransaction(tx *Transaction) error {
+	if err := b.ValidateTransaction(tx); err != nil {
+		return err
+	}
+
+	b.TransactionsMempool = append(b.TransactionsMempool, *tx)
+	return nil
 }
 
-func (b *Blockchain) replaceChain() (bool, error) {
+// Get all unspent Transactions
+func (bc *Blockchain) GetUTXOPool() []UTXO {
+	utxos := make(map[string]UTXO)
+
+	for _, block := range bc.Chain {
+		for _, tx := range block.Transactions {
+			for i, txOut := range tx.TxOuts {
+				key := fmt.Sprintf("%s_%d", tx.Id, i)
+				utxos[key] = UTXO{
+					TxId:   tx.Id,
+					Index:  int64(i),
+					Output: txOut,
+				}
+			}
+
+			for _, txIn := range tx.TxIns {
+				key := fmt.Sprintf("%s_%d", txIn.TxOutId, txIn.TxOutIndex)
+				delete(utxos, key)
+			}
+		}
+	}
+
+	result := make([]UTXO, 0, len(utxos))
+
+	for _, u := range utxos {
+		result = append(result, u)
+	}
+
+	return result
+}
+
+// Get unspent transactions by address
+func (b *Blockchain) GetUTXPoolByAddress(address string) []UTXO {
+	utxos := b.GetUTXOPool()
+	result := make([]UTXO, 0)
+
+	for _, u := range utxos {
+		if u.Output.Address == address {
+			result = append(result, u)
+		}
+	}
+
+	return result
+}
+
+func (b *Blockchain) ValidateTransaction(tx *Transaction) error {
+	utxos := b.GetUTXOPool()
+
+	totalInput := float32(0)
+	totalOutput := float32(0)
+
+	for _, txIn := range tx.TxIns {
+		// 1. Find matching UTXO
+		utxoKey := fmt.Sprintf("%s_%d", txIn.TxOutId, txIn.TxOutIndex)
+
+		var utxo *UTXO
+		for _, u := range utxos {
+			if u.TxId == txIn.TxOutId && u.Index == txIn.TxOutIndex {
+				utxo = &u
+				break
+			}
+		}
+		if utxo == nil {
+			return fmt.Errorf("invalid TxIn: no matching UTXO for %s", utxoKey)
+		}
+
+		// 2. Verify the signature
+		pubKey, err := utils.DecodePublicKey(utxo.Output.Address)
+		if err != nil {
+			return fmt.Errorf("invalid public key for address %s", utxo.Output.Address)
+		}
+
+		if !VerifyTransactionSignature(tx.Id, txIn.Signature, pubKey) {
+			return fmt.Errorf("invalid signature for input %s", utxoKey)
+		}
+
+		totalInput += utxo.Output.Amount
+	}
+
+	// 3. Validate outputs
+	for _, txOut := range tx.TxOuts {
+		totalOutput += txOut.Amount
+	}
+
+	// 4. Inputs must be ≥ outputs
+	if totalInput < totalOutput {
+		return fmt.Errorf("input (%.2f) < output (%.2f)", totalInput, totalOutput)
+	}
+	return nil
+}
+
+func (b *Blockchain) ReplaceChain() (bool, error) {
 	replacementChain := []Block{}
-	maxChainLen := len(b.chain)
-	nodes, err := getConnectedNodes(b.serverUrl)
+	maxChainLen := len(b.Chain)
+	nodes, err := getConnectedNodes(b.ServerUrl)
 
 	if err != nil {
 		return false, err
@@ -105,8 +197,8 @@ func (b *Blockchain) replaceChain() (bool, error) {
 		}
 	}
 
-	if len(replacementChain) > 0 && isChainValid(replacementChain) {
-		b.chain = replacementChain
+	if len(replacementChain) > 0 && IsChainValid(replacementChain) {
+		b.Chain = replacementChain
 		return true, nil
 	}
 	return false, nil
@@ -170,7 +262,7 @@ func (b *Blockchain) mine(blockToMine *Block) *Block {
 		blockToMine.Nonce = nonce
 		computedHash := hashBlock(blockToMine)
 
-		if strings.HasPrefix(computedHash, strings.Repeat("0", int(b.difficulty))) {
+		if strings.HasPrefix(computedHash, strings.Repeat("0", int(b.Difficulty))) {
 			blockToMine.Hash = computedHash
 			break
 		} else {
@@ -183,7 +275,7 @@ func (b *Blockchain) mine(blockToMine *Block) *Block {
 	return blockToMine
 }
 
-func isChainValid(chain []Block) bool {
+func IsChainValid(chain []Block) bool {
 	prevBlock := chain[0]
 	for i := 1; i < len(chain)-1; i++ {
 		currentBlock := chain[i]
@@ -227,7 +319,6 @@ func generateGenesis() *Block {
 	newBlockInsert := BlockInsert{
 		PrevHash: "",
 		Index:    0,
-		Data:     make([]Transaction, 0),
 	}
 	block := NewBlock(newBlockInsert)
 	hash := hashBlock(block)
@@ -236,20 +327,20 @@ func generateGenesis() *Block {
 }
 
 type blockHeader struct {
-	Index     uint64
-	Timestamp int64
-	Data      []Transaction
-	PrevHash  string
-	Nonce     uint64
+	Index        uint64
+	Timestamp    int64
+	Transactions []Transaction
+	PrevHash     string
+	Nonce        uint64
 }
 
 func hashBlock(b *Block) string {
 	header := blockHeader{
-		Index:     b.Index,
-		Timestamp: b.Timestamp,
-		Data:      b.Data,
-		PrevHash:  b.PrevHash,
-		Nonce:     b.Nonce,
+		Index:        b.Index,
+		Timestamp:    b.Timestamp,
+		Transactions: b.Transactions,
+		PrevHash:     b.PrevHash,
+		Nonce:        b.Nonce,
 	}
 
 	var buf bytes.Buffer

@@ -8,12 +8,12 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
-	bl "github.com/diegorezm/DBlockchain/internals/blockchain"
+	"github.com/diegorezm/DBlockchain/internals/handlers"
 )
 
 func main() {
 	r := chi.NewRouter()
-	handler := bl.NewServerHandler()
+	handler := handlers.NewBlockchainServerHandler()
 
 	registerEndpoints(r, handler)
 
@@ -33,7 +33,7 @@ func main() {
 	log.Fatalf("%v", http.ListenAndServe(addr, r))
 }
 
-func registerEndpoints(r chi.Router, handler *bl.ServerHandler) {
+func registerEndpoints(r chi.Router, handler *handlers.BlockchainServerHandler) {
 	r.Get("/nodes", handler.GetNodes)
 
 	r.Post("/connect", handler.ConnectNode)

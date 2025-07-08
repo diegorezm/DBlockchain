@@ -1,4 +1,4 @@
-package blockchain
+package handlers
 
 import (
 	"context"
@@ -8,24 +8,25 @@ import (
 	"sync"
 	"time"
 
+	"github.com/diegorezm/DBlockchain/internals/blockchain"
 	webutils "github.com/diegorezm/DBlockchain/internals/web_utils"
 )
 
-type ServerHandler struct {
+type BlockchainServerHandler struct {
 	nodes map[string]bool
 	mu    sync.Mutex
 }
 
-func NewServerHandler() *ServerHandler {
-	return &ServerHandler{
+func NewBlockchainServerHandler() *BlockchainServerHandler {
+	return &BlockchainServerHandler{
 		nodes: make(map[string]bool),
 		mu:    sync.Mutex{},
 	}
 }
 
 // Register a new node inside of the nodes map.
-func (s *ServerHandler) ConnectNode(w http.ResponseWriter, r *http.Request) {
-	b, err := webutils.ParseJSON[NodeInsert](r.Body)
+func (s *BlockchainServerHandler) ConnectNode(w http.ResponseWriter, r *http.Request) {
+	b, err := webutils.ParseJSON[blockchain.NodeInsert](r.Body)
 
 	if err != nil {
 		webutils.WriteBadRequest(w, err.Error())
@@ -39,8 +40,8 @@ func (s *ServerHandler) ConnectNode(w http.ResponseWriter, r *http.Request) {
 }
 
 // Register a new node inside of the nodes map.
-func (s *ServerHandler) DisconnectNode(w http.ResponseWriter, r *http.Request) {
-	b, err := webutils.ParseJSON[NodeInsert](r.Body)
+func (s *BlockchainServerHandler) DisconnectNode(w http.ResponseWriter, r *http.Request) {
+	b, err := webutils.ParseJSON[blockchain.NodeInsert](r.Body)
 
 	if err != nil {
 		webutils.WriteBadRequest(w, err.Error())
@@ -56,7 +57,7 @@ func (s *ServerHandler) DisconnectNode(w http.ResponseWriter, r *http.Request) {
 }
 
 // GetNodes returns the list of all currently registered nodes.
-func (s *ServerHandler) GetNodes(w http.ResponseWriter, r *http.Request) {
+func (s *BlockchainServerHandler) GetNodes(w http.ResponseWriter, r *http.Request) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -71,7 +72,7 @@ func (s *ServerHandler) GetNodes(w http.ResponseWriter, r *http.Request) {
 // PingNodes checks the liveness of all registered nodes by sending a GET request to their /ping endpoint.
 // If a node does not respond successfully (e.g., network error, timeout, non-200 status),
 // it is removed from the list of registered nodes.
-func (s *ServerHandler) PingNodes() {
+func (s *BlockchainServerHandler) PingNodes() {
 	log.Println("Starting node ping routine...")
 
 	s.mu.Lock()
@@ -145,6 +146,6 @@ func (s *ServerHandler) PingNodes() {
 	log.Println("Node ping routine finished.")
 }
 
-func (s *ServerHandler) PingHandler(w http.ResponseWriter, r *http.Request) {
+func (s *BlockchainServerHandler) PingHandler(w http.ResponseWriter, r *http.Request) {
 	webutils.WriteSuccess[any](w, nil, "Pong!")
 }

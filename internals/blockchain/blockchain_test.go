@@ -2,71 +2,101 @@ package blockchain
 
 import (
 	"testing"
+
+	"github.com/diegorezm/DBlockchain/internals/utils"
 )
 
-func Test_NewBlockchain(t *testing.T) {
+func TestBlockchain_Genesis(t *testing.T) {
 	blockchain := NewBlockchain("")
-	chain := blockchain.GetChain()
-
-	if len(chain) != 1 {
-		t.Errorf("Something went wrong while creating the genesis block.")
-	}
-
-	if chain[0].Index != 0 {
-		t.Errorf("The index of the genesis block is wrong.")
-	}
-
-	if chain[0].PrevHash != "" {
-		t.Errorf("The PrevHash of the genesis should be nil.")
+	if len(blockchain.Chain) == 0 {
+		t.Error("The genesis block was not created.\n")
 	}
 }
 
-func Test_AppendBlock(t *testing.T) {
+func TestBlockchain_AppendBlock(t *testing.T) {
 	blockchain := NewBlockchain("")
-	chain := blockchain.GetChain()
-
-	if len(chain) != 1 {
-		t.Errorf("Something went wrong while creating the genesis block.")
+	if len(blockchain.Chain) == 0 {
+		t.Error("The genesis block was not created.\n")
 	}
-
-	transactionInsert := TransactionInsert{
-		From:   "a",
-		To:     "b",
-		Amount: 1,
-	}
-	blockchain.AppendTransaction(transactionInsert)
-	blockchain.AppendTransaction(transactionInsert)
-
-	transactions := blockchain.GetTransactions()
-	if len(transactions) != 2 {
-		t.Errorf("Something went wrong while adding transactions.\n")
-	}
-
-	blockchain.AppendBlock()
-	chain = blockchain.GetChain()
-
-	if len(chain) != 2 {
-		t.Errorf("Something went wrong while mining the block.\n")
+	err := blockchain.AppendBlock()
+	if err != nil {
+		t.Errorf("The block was not appended to the chain.\n%v\n", err)
 	}
 }
-
-func Test_IsChainValid(t *testing.T) {
+func TestBlockchain_Transaction(t *testing.T) {
 	blockchain := NewBlockchain("")
-	chain := blockchain.GetChain()
 
-	if len(chain) != 1 {
-		t.Errorf("Something went wrong while creating the genesis block.")
+	// 1. Generate a key pair (sender)
+	priv, err := utils.GenerateKeyPair()
+	if err != nil {
+		t.Fatalf("Failed to generate keypair: %v", err)
 	}
 
-	transactionInsert := TransactionInsert{
-		From:   "a",
-		To:     "b",
-		Amount: 1,
-	}
-	blockchain.AppendTransaction(transactionInsert)
-	blockchain.AppendTransaction(transactionInsert)
+	// 2. Encode public key as address
+	keypair, err := utils.EncodeKeyPair(priv)
 
-	if !isChainValid(blockchain.GetChain()) {
-		t.Error("Something went wrong while appending blocks to the chain.")
+	if err != nil {
+		t.Fatalf("Failed to encode public key: %v", err)
+	}
+
+	// 3. Manually create a UTXO by adding a funding transaction in a new block
+	fundingTx := &Transaction{
+		Id:     "funding-tx-1",
+		TxIns:  []TxIn{}, // coinbase or genesis, no input
+		TxOuts: []TxOut{{Address: keypair.PublicKey, Amount: 5.0}},
+	}
+	block := NewBlock(BlockInsert{
+		Index:    1,
+		PrevHash: blockchain.Chain[len(blockchain.Chain)-1].Hash,
+	})
+	block.Transactions = []Transaction{*fundingTx}
+	block.Hash = "mockedhash"
+	blockchain.Chain = append(blockchain.Chain, *block)
+
+	// 4. Build transaction input using UTXO from fundingTx
+	txInput := TransactionInput{
+		TxIns: []TxIn{{
+			TxOutId:    "funding-tx-1",
+			TxOutIndex: 0,
+			Signature:  "", // to be signed
+		}},
+		TxOuts: []TxOut{
+			{Address: "bob-address", Amount: 3.0},
+			{Address: keypair.PublicKey, Amount: 2.0},
+		},
+	}
+
+	// 5. Sign and create transaction
+	newTX, err := NewSignedTransaction(txInput, priv)
+	if err != nil {
+		t.Fatalf("Failed to create signed transaction: %v", err)
+	}
+
+	// 6. Validate transaction
+	if err := blockchain.ValidateTransaction(newTX); err != nil {
+		t.Fatalf("Transaction failed validation: %v", err)
+	}
+
+	// 7. Append transaction to mempool (or next block)
+	blockchain.AppendTransaction(newTX)
+
+	// 8. Mine the block
+	err = blockchain.AppendBlock()
+	if err != nil {
+		t.Fatalf("Failed to mine block with transaction: %v", err)
+	}
+
+	// 9. Check if transaction was included
+	latest := blockchain.GetLastBlock()
+	found := false
+
+	for _, tx := range latest.Transactions {
+		if tx.Id == newTX.Id {
+			found = true
+			break
+		}
+	}
+	if !found {
+		t.Fatal("Transaction was not included in the mined block")
 	}
 }

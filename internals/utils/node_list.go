@@ -1,4 +1,4 @@
-package nodelist
+package utils
 
 type Node[T comparable] struct {
 	data T

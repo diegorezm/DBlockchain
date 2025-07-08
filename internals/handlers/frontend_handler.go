@@ -1,0 +1,51 @@
+package handlers
+
+import (
+	"net/http"
+
+	"github.com/diegorezm/DBlockchain/internals/frontend/pages"
+	webutils "github.com/diegorezm/DBlockchain/internals/web_utils"
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
+)
+
+type FrontendHandler struct {
+}
+
+func NewFrontendHandler() *FrontendHandler {
+	return &FrontendHandler{}
+}
+
+func (h *FrontendHandler) GetIndexPage(w http.ResponseWriter, r *http.Request) {
+	http.Redirect(w, r, "/wallet", http.StatusMovedPermanently)
+}
+
+func (h *FrontendHandler) GetWalletPage(w http.ResponseWriter, r *http.Request) {
+	walletPage := pages.WalletPage()
+	ctx := r.Context()
+	if err := walletPage.Render(ctx, w); err != nil {
+		webutils.WriteInternalServerError(w, err.Error())
+	}
+}
+
+func (h *FrontendHandler) GetBlocksPage(w http.ResponseWriter, r *http.Request) {
+	blocksPage := pages.BlocksPage()
+	ctx := r.Context()
+	if err := blocksPage.Render(ctx, w); err != nil {
+		webutils.WriteInternalServerError(w, err.Error())
+	}
+}
+
+func (h *FrontendHandler) GetTransactionsPage(w http.ResponseWriter, r *http.Request) {
+	transactionsPage := pages.TransactionsPage()
+	ctx := r.Context()
+	if err := transactionsPage.Render(ctx, w); err != nil {
+		webutils.WriteInternalServerError(w, err.Error())
+	}
+}
+
+func (h *FrontendHandler) ServeAssets(r chi.Router) {
+	r.Use(middleware.StripSlashes)
+	fileServer := http.FileServer(http.Dir("./internals/frontend/assets"))
+	r.Handle("/*", http.StripPrefix("/assets", fileServer))
+}

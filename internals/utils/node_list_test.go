@@ -1,4 +1,4 @@
-package nodelist
+package utils
 
 import "testing"
 
