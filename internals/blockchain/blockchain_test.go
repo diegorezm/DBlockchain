@@ -23,6 +23,7 @@ func TestBlockchain_AppendBlock(t *testing.T) {
 		t.Errorf("The block was not appended to the chain.\n%v\n", err)
 	}
 }
+
 func TestBlockchain_Transaction(t *testing.T) {
 	blockchain := NewBlockchain("")
 
@@ -98,5 +99,80 @@ func TestBlockchain_Transaction(t *testing.T) {
 	}
 	if !found {
 		t.Fatal("Transaction was not included in the mined block")
+	}
+}
+
+func TestBlockchain_DoubleSpendingFails(t *testing.T) {
+	blockchain := NewBlockchain("")
+
+	// Generate keypair
+	priv, err := utils.GenerateKeyPair()
+	if err != nil {
+		t.Fatalf("Failed to generate keypair: %v", err)
+	}
+
+	// 2. Encode public key as address
+	keypair, err := utils.EncodeKeyPair(priv)
+
+	if err != nil {
+		t.Fatalf("Failed to encode public key: %v", err)
+	}
+
+	// Fund the address
+	fundTx := &Transaction{
+		Id:     "funding-tx-1",
+		TxIns:  []TxIn{},
+		TxOuts: []TxOut{{Address: keypair.PublicKey, Amount: 5.0}},
+	}
+	block := NewBlock(BlockInsert{
+		Index:    1,
+		PrevHash: blockchain.Chain[len(blockchain.Chain)-1].Hash,
+	})
+	block.Transactions = []Transaction{*fundTx}
+	block.Hash = "hash1"
+	blockchain.Chain = append(blockchain.Chain, *block)
+
+	// ⛏️ First transaction spends the UTXO
+	txInput1 := TransactionInput{
+		TxIns: []TxIn{{
+			TxOutId:    "funding-tx-1",
+			TxOutIndex: 0,
+			Signature:  "",
+		}},
+		TxOuts: []TxOut{
+			{Address: "bob-address", Amount: 5.0},
+		},
+	}
+	tx1, err := NewSignedTransaction(txInput1, priv)
+	if err != nil {
+		t.Fatalf("Failed to sign tx1: %v", err)
+	}
+	if err := blockchain.ValidateTransaction(tx1); err != nil {
+		t.Fatalf("tx1 should be valid: %v", err)
+	}
+	blockchain.AppendTransaction(tx1)
+	blockchain.AppendBlock() // UTXO now spent
+
+	// ❌ Try to spend the same UTXO again in tx2
+	txInput2 := TransactionInput{
+		TxIns: []TxIn{{
+			TxOutId:    "funding-tx-1",
+			TxOutIndex: 0, // same as tx1
+			Signature:  "",
+		}},
+		TxOuts: []TxOut{
+			{Address: "charlie-address", Amount: 5.0},
+		},
+	}
+	tx2, err := NewSignedTransaction(txInput2, priv)
+	if err != nil {
+		t.Fatalf("Failed to sign tx2: %v", err)
+	}
+
+	// 🧨 This should now fail validation
+	if err := blockchain.ValidateTransaction(tx2); err == nil {
+		t.Fatal("Double-spending transaction should have failed, but it passed")
+	} else {
+		t.Logf("✅ Double-spending correctly failed: %v", err)
 	}
 }
