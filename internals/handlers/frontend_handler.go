@@ -3,6 +3,7 @@ package handlers
 import (
 	"net/http"
 
+	"github.com/diegorezm/DBlockchain/internals/blockchain"
 	"github.com/diegorezm/DBlockchain/internals/frontend/pages"
 	webutils "github.com/diegorezm/DBlockchain/internals/web_utils"
 	"github.com/go-chi/chi/v5"
@@ -10,10 +11,11 @@ import (
 )
 
 type FrontendHandler struct {
+	blockchain *blockchain.Blockchain
 }
 
-func NewFrontendHandler() *FrontendHandler {
-	return &FrontendHandler{}
+func NewFrontendHandler(blockchain *blockchain.Blockchain) *FrontendHandler {
+	return &FrontendHandler{blockchain}
 }
 
 func (h *FrontendHandler) GetIndexPage(w http.ResponseWriter, r *http.Request) {
@@ -29,7 +31,7 @@ func (h *FrontendHandler) GetWalletPage(w http.ResponseWriter, r *http.Request) 
 }
 
 func (h *FrontendHandler) GetBlocksPage(w http.ResponseWriter, r *http.Request) {
-	blocksPage := pages.BlocksPage()
+	blocksPage := pages.BlocksPage(h.blockchain.Chain)
 	ctx := r.Context()
 	if err := blocksPage.Render(ctx, w); err != nil {
 		webutils.WriteInternalServerError(w, err.Error())

@@ -45,7 +45,7 @@ func main() {
 func registerHandlers(r *chi.Mux, blockchain *bl.Blockchain) {
 	blockchainHandler := handlers.NewBlockchainClientHandler(blockchain)
 	walletHandler := handlers.NewWalletHandler(blockchain)
-	frontendHandler := handlers.NewFrontendHandler()
+	frontendHandler := handlers.NewFrontendHandler(blockchain)
 
 	// PAGES
 	r.Route("/", func(r chi.Router) {

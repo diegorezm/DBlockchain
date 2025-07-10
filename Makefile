@@ -24,10 +24,13 @@ test:
 run: build
 	@$(CLIENT_OUTPUT_PATH)
 
-templ:
+templ-dev:
 	go tool templ generate --watch --proxy="http://localhost:3000" --open-browser=false
 
-server:
+templ:
+	go tool templ generate 
+
+dev-server:
 	go tool air \
 		--build.cmd "go build -o tmp/bin/main ./cmd/client/main.go" \
 		--build.bin "tmp/bin/main" \
@@ -37,10 +40,17 @@ server:
 		--build.stop_on_error "false" \
 		--misc.clean_on_exit true  
 
+tailwind-dev:
+	bun run tailwind:dev
+
 tailwind:
-	npx @tailwindcss/cli -i ./internals/frontend/static/input.css -o ./internals/frontend/assets/style.css --watch
+	bun run tailwind:build
 
 dev:
-	make -j3 tailwind templ server
+	make -j3 tailwind-dev templ-dev dev-server
+
+prod:
+	make -j3 tailwind templ build
+
 
 .PHONY: templ server tailwind all

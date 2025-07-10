@@ -4,12 +4,12 @@ import "github.com/diegorezm/DBlockchain/internals/frontend/components/sidebar"
 
 templ DashboardLayout(currentPath string) {
 	<!DOCTYPE html>
-	<html lang="en" class="dark">
+	<html lang="en">
 		<head>
 			<meta charset="UTF-8"/>
 			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 			<link rel="stylesheet" href="/assets/style.css"/>
-			 <link rel="preconnect" href="https://fonts.googleapis.com"/>
+			<link rel="preconnect" href="https://fonts.googleapis.com"/>
 			<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 			<link
 				href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,opsz,wght@0,6..12,200..1000;1,6..12,200..1000&display=swap"
@@ -17,11 +17,12 @@ templ DashboardLayout(currentPath string) {
 			/>
 			<title>D-Blockchain</title>
 		</head>
-		<body class="flex">
+		<body class="flex gap-2 relative">
 			@sidebar.Sidebar(currentPath)
-			<main>
+			<div class="min-h-full flex items-center justify-center w-full ml-[300px] my-6 overflow-y-auto px-4">
 				{ children... }
-			</main>
+			</div>
+			<script src="/assets/index.js"></script>
 		</body>
 	</html>
 }

@@ -1,17 +1,31 @@
 @import "tailwindcss";
 
+/* :root { */
+/*   --background: #142029; */
+/*   --foreground: #e9d8c8; */
+/**/
+/*   --primary: #732553; */
+/*   ---on-primary: #e9d8c8; */
+/**/
+/*   --secondary: #ff5c8d; */
+/*   ---on-secondary: #142030; */
+/**/
+/*   --surface: #1e3442; */
+/*   --on-surface: #e9d8c8; */
+/* } */
+
 :root {
-  --background: #142029;
-  --foreground: #E9D8C8;
+  --background: #171717;
+  --foreground: #dedede;
 
-  --primary: #732553;
-  ---on-primary: #E9D8C8;
+  --primary: #f25623;
+  ---on-primary: #171717;
 
-  --secondary: #FF5C8D;
-  ---on-secondary: #142030;
+  --secondary: #2358f2;
+  --on-secondary: #dedede;
 
-  --surface: #1E3442;
-  --on-surface: #E9D8C8;
+  --surface: #4d4d4d;
+  --on-surface: #dedede;
 }
 
 @theme {
@@ -28,9 +42,10 @@
   --color-on-surface: var(--on-surface);
 }
 
-
 body {
-  font-family: "Nunito Sans", system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  font-family:
+    "Nunito Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
   background-color: var(--background);
   color: var(--foreground);
   font-size: 16px;

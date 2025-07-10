@@ -1,9 +1,25 @@
 package pages
 
-import "github.com/diegorezm/DBlockchain/internals/frontend/layout"
+import (
+	"fmt"
+	"github.com/diegorezm/DBlockchain/internals/blockchain"
+	"github.com/diegorezm/DBlockchain/internals/frontend/components/table"
+	"github.com/diegorezm/DBlockchain/internals/frontend/layout"
+)
 
-templ BlocksPage() {
-@layout.DashboardLayout("/blocks") {
-<h1>blocks</h1>
-}
+templ BlocksPage(blocks []blockchain.Block) {
+	@layout.DashboardLayout("/blocks") {
+		<main>
+			<h1 class="text-3xl font-bold mb-6 ">Blocks</h1>
+			@table.Table([]string{"Index", "Hash", "Timestamp"}) {
+				for _, b := range blocks {
+					@table.TableRow() {
+						<td class="px-6 py-4 text-center">{ fmt.Sprintf("%d", b.Index) }</td>
+						<td class="px-6 py-4 break-all">{ b.Hash }</td>
+						<td class="px-6 py-4 text-center">{ b.Timestamp }</td>
+					}
+				}
+			}
+		</main>
+	}
 }
