@@ -1,8 +1,10 @@
 package handlers
 
 import (
+	"fmt"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/diegorezm/DBlockchain/internals/blockchain"
 	"github.com/diegorezm/DBlockchain/internals/frontend/pages/wallet_page"
@@ -46,7 +48,44 @@ func (wh *WalletHandler) Generate(w http.ResponseWriter, r *http.Request) {
 	page.Render(r.Context(), w)
 }
 
+func (wh *WalletHandler) SavePubKey(w http.ResponseWriter, r *http.Request) {
+	err := r.ParseForm()
+
+	if err != nil {
+		webutils.WriteBadRequest(w, fmt.Sprintf("Invalid request payload: %v", err))
+		return
+	}
+
+	v := r.Form.Get("pubKey")
+
+	cookie := http.Cookie{
+		Name:     "public-key",
+		Value:    v,
+		Expires:  time.Now().Add(365 * 24 * time.Hour),
+		Path:     "/",
+		Secure:   false,
+		HttpOnly: true,
+	}
+
+	http.SetCookie(w, &cookie)
+	http.Redirect(w, r, "/wallet", http.StatusSeeOther)
+}
+
+func (wh *WalletHandler) ForgetPublicKey(w http.ResponseWriter, r *http.Request) {
+	http.SetCookie(w, &http.Cookie{
+		Name:     "public-key",
+		Value:    "",
+		Path:     "/",
+		Expires:  time.Unix(0, 0),
+		MaxAge:   -1,
+		HttpOnly: true,
+	})
+	http.Redirect(w, r, "/wallet", http.StatusSeeOther)
+}
+
 func (wh *WalletHandler) Register(r chi.Router) {
 	r.Post("/wallet/generate", wh.Generate)
+	r.Post("/wallet/save-key", wh.SavePubKey)
+	r.Post("/wallet/forget-key", wh.ForgetPublicKey)
 	r.Get("/wallet/utxos/{address}", wh.GetUTXOsByAddress)
 }

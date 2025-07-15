@@ -117,6 +117,7 @@ func (bc *Blockchain) GetUTXOPool() []UTXO {
 func (b *Blockchain) GetUTXPoolByAddress(address string) []UTXO {
 	utxos := b.GetUTXOPool()
 	result := make([]UTXO, 0)
+	fmt.Printf("UTXOPool: %v\n", utxos)
 
 	for _, u := range utxos {
 		if u.Output.Address == address {
@@ -130,8 +131,8 @@ func (b *Blockchain) GetUTXPoolByAddress(address string) []UTXO {
 func (b *Blockchain) ValidateTransaction(tx *Transaction) error {
 	utxos := b.GetUTXOPool()
 
-	totalInput := float32(0)
-	totalOutput := float32(0)
+	totalInput := float64(0)
+	totalOutput := float64(0)
 
 	for _, txIn := range tx.TxIns {
 		// 1. Find matching UTXO
@@ -167,7 +168,7 @@ func (b *Blockchain) ValidateTransaction(tx *Transaction) error {
 	}
 
 	// 4. Inputs must be ≥ outputs
-	if totalInput < totalOutput {
+	if !tx.IsSystem && totalInput < totalOutput {
 		return fmt.Errorf("input (%.2f) < output (%.2f)", totalInput, totalOutput)
 	}
 	return nil

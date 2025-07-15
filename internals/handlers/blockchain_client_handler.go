@@ -37,12 +37,13 @@ func (bc *BlockchainClientHandler) Mine(w http.ResponseWriter, r *http.Request) 
 	table := blocks_page.BlocksTable(chain)
 	w.Header().Set("Content-Type", "text/html")
 	table.Render(r.Context(), w)
-	// webutils.WriteJSON[any](w, http.StatusCreated, nil, "New block mined successfully!")
 }
 
 type appendTransactionInput struct {
-	PrivateKey string `json:"private_key"`
-	blockchain.TransactionInput
+	PrivateKey string  `json:"private_key"`
+	From       string  `json:"from"`
+	To         string  `json:"to"`
+	Amount     float64 `json:"amount"`
 }
 
 func (bc *BlockchainClientHandler) AppendTransaction(w http.ResponseWriter, r *http.Request) {
@@ -58,19 +59,115 @@ func (bc *BlockchainClientHandler) AppendTransaction(w http.ResponseWriter, r *h
 		return
 	}
 
-	tx, err := blockchain.NewSignedTransaction(input.TransactionInput, privKey)
+	availableUTXOs := bc.blockchain.GetUTXPoolByAddress(input.From)
 
-	if err != nil {
-		webutils.WriteInternalServerError(w, fmt.Sprintf("Something went wrong: %v", err))
+	var txIns []blockchain.TxIn
+	var totalInput float64
+	// For each availiable UTXO, we append a TxIn. We do this until there is enougth money
+	for _, utxo := range availableUTXOs {
+		txIns = append(txIns, blockchain.TxIn{
+			TxOutId:    utxo.TxId,
+			TxOutIndex: utxo.Index,
+		})
+
+		totalInput += utxo.Output.Amount
+
+		if totalInput >= input.Amount {
+			break
+		}
+	}
+
+	if totalInput < input.Amount {
+		webutils.WriteBadRequest(w, "Insufficient funds")
 		return
 	}
 
-	err = bc.blockchain.AppendTransaction(tx)
+	var txOuts []blockchain.TxOut
 
+	// Primary recipient
+	txOuts = append(txOuts, blockchain.TxOut{
+		Address: input.To,
+		Amount:  input.Amount,
+	})
+
+	change := totalInput - input.Amount
+	if change > 0 {
+		txOuts = append(txOuts, blockchain.TxOut{
+			Address: input.From,
+			Amount:  change,
+		})
+	}
+
+	txInput := blockchain.TransactionInput{
+		TxIns:    txIns,
+		TxOuts:   txOuts,
+		IsSystem: false,
+	}
+
+	signedTx, err := blockchain.NewSignedTransaction(txInput, privKey)
 	if err != nil {
-		webutils.WriteBadRequest(w, fmt.Sprintf("Invalid transaction: %v", err))
+		webutils.WriteInternalServerError(w, err.Error())
 		return
 	}
+
+	if err := bc.blockchain.AppendTransaction(signedTx); err != nil {
+		webutils.WriteInternalServerError(w, fmt.Sprintf("Failed to add transaction: %v", err))
+		return
+	}
+	webutils.WriteSuccess(w, signedTx, "Transaction added to pool")
+}
+
+type buyCoinsRequest struct {
+	PrivateKey string  `json:"private_key"`
+	To         string  `json:"to"`
+	Amount     float64 `json:"amount"`
+}
+
+func (bc *BlockchainClientHandler) BuyCoins(w http.ResponseWriter, r *http.Request) {
+	input, err := webutils.ParseJSON[buyCoinsRequest](r.Body)
+	if err != nil {
+		webutils.WriteBadRequest(w, fmt.Sprintf("Invalid request payload: %v", err))
+		return
+	}
+
+	privKey, err := utils.DecodePrivateKey(input.PrivateKey)
+	if err != nil {
+		webutils.WriteBadRequest(w, "Failed to parse private key")
+		return
+	}
+
+	if input.Amount <= 0 {
+		webutils.WriteBadRequest(w, "Amount must be greater than zero")
+		return
+	}
+
+	if input.To == "" {
+		webutils.WriteBadRequest(w, "Recipient public key is required")
+		return
+	}
+
+	txInput := blockchain.TransactionInput{
+		IsSystem: true,
+		TxIns:    []blockchain.TxIn{},
+		TxOuts: []blockchain.TxOut{
+			{
+				Address: input.To,
+				Amount:  input.Amount,
+			},
+		},
+	}
+
+	signedTx, err := blockchain.NewSignedTransaction(txInput, privKey)
+	if err != nil {
+		webutils.WriteInternalServerError(w, err.Error())
+		return
+	}
+
+	if err := bc.blockchain.AppendTransaction(signedTx); err != nil {
+		webutils.WriteInternalServerError(w, fmt.Sprintf("Failed to add transaction: %v", err))
+		return
+	}
+	webutils.WriteSuccess(w, signedTx, "Transaction added to pool")
 }
 
 func (bc *BlockchainClientHandler) ReplaceChain(w http.ResponseWriter, r *http.Request) {
@@ -109,4 +206,5 @@ func (bc *BlockchainClientHandler) Register(r chi.Router) {
 	r.Get("/chain/replace", bc.ReplaceChain)
 	r.Post("/chain/mine", bc.Mine)
 	r.Post("/transactions/add", bc.AppendTransaction)
+	r.Post("/transactions/buy", bc.BuyCoins)
 }

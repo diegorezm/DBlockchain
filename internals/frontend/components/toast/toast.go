@@ -1,0 +1,3 @@
+package toast
+
+templ Toast(){}

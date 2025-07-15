@@ -31,7 +31,7 @@ func CopyAndPaste(id, title, content string) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"mb-4\"><label for=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"mb-4 w-full\"><label for=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -57,7 +57,7 @@ func CopyAndPaste(id, title, content string) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "</span></label><div class=\"flex flex-col gap-2\"><textarea id=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "</span></label><div class=\"flex flex-col gap-2 w-full\"><textarea id=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -96,7 +96,7 @@ func CopyAndPaste(id, title, content string) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "</textarea><div><button class=\"btn btn-sm  transition-colors delay-300\" :class=\"{\n          'btn-primary': copied === true,\n          'btn-outline': copied === false\n          }\" x-data=\"{ copied: false }\" x-on:click=\"\n        copyAndPaste()\n        copied = true\n        setTimeout(() => copied = false, 3000);\n                \"><span x-show=\"!copied\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "</textarea><div><button class=\"btn btn-sm  transition-colors delay-150\" :class=\"{\n          'btn-primary': copied === true,\n          'btn-outline': copied === false\n          }\" x-data=\"{ copied: false }\" x-on:click=\"\n        copyAndPaste()\n        copied = true\n        setTimeout(() => copied = false, 2000);\n                \"><span x-show=\"!copied\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

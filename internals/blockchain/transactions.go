@@ -13,7 +13,7 @@ import (
 
 type TxOut struct {
 	Address string  `json:"address"`
-	Amount  float32 `json:"amount"`
+	Amount  float64 `json:"amount"`
 }
 
 type TxIn struct {
@@ -23,14 +23,16 @@ type TxIn struct {
 }
 
 type Transaction struct {
-	Id     string  `json:"id"`
-	TxIns  []TxIn  `json:"tx_ins"`
-	TxOuts []TxOut `json:"tx_outs"`
+	Id       string  `json:"id"`
+	TxIns    []TxIn  `json:"tx_ins"`
+	TxOuts   []TxOut `json:"tx_outs"`
+	IsSystem bool    `json:"is_system"`
 }
 
 type TransactionInput struct {
-	TxIns  []TxIn  `json:"tx_ins"`
-	TxOuts []TxOut `json:"tx_outs"`
+	TxIns    []TxIn  `json:"tx_ins"`
+	TxOuts   []TxOut `json:"tx_outs"`
+	IsSystem bool    `json:"is_system"`
 }
 
 type UTXO struct {
@@ -97,9 +99,10 @@ func NewTransaction(input TransactionInput) (*Transaction, error) {
 	}
 
 	return &Transaction{
-		Id:     id,
-		TxIns:  input.TxIns,
-		TxOuts: input.TxOuts,
+		Id:       id,
+		TxIns:    input.TxIns,
+		TxOuts:   input.TxOuts,
+		IsSystem: input.IsSystem,
 	}, nil
 }
 
@@ -116,8 +119,9 @@ func NewSignedTransaction(input TransactionInput, privKey *ecdsa.PrivateKey) (*T
 	}
 
 	return &Transaction{
-		Id:     id,
-		TxIns:  input.TxIns,
-		TxOuts: input.TxOuts,
+		Id:       id,
+		TxIns:    input.TxIns,
+		TxOuts:   input.TxOuts,
+		IsSystem: input.IsSystem,
 	}, nil
 }

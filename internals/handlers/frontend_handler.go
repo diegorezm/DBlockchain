@@ -26,6 +26,7 @@ func (h *FrontendHandler) GetIndexPage(w http.ResponseWriter, r *http.Request) {
 
 func (h *FrontendHandler) GetWalletPage(w http.ResponseWriter, r *http.Request) {
 	var publicKey string
+	var utxos []blockchain.UTXO
 
 	publicKeyCookie, err := r.Cookie("public-key")
 
@@ -33,9 +34,10 @@ func (h *FrontendHandler) GetWalletPage(w http.ResponseWriter, r *http.Request) 
 		publicKey = ""
 	} else {
 		publicKey = publicKeyCookie.Value
+		utxos = h.blockchain.GetUTXPoolByAddress(publicKey)
 	}
 
-	walletPage := wallet_page.WalletPage(publicKey)
+	walletPage := wallet_page.WalletPage(publicKey, utxos)
 
 	ctx := r.Context()
 	if err := walletPage.Render(ctx, w); err != nil {

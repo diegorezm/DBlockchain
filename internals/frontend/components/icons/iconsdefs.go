@@ -13,6 +13,7 @@ var CopyCheck = Icon("copy-check")
 var ChevronLeft = Icon("chevron-left")
 var RefreshCW = Icon("refresh-cw")
 var Save = Icon("save")
+var HandCoins = Icon("hand-coins")
 
 func GetIconFromString(name string) func(...Props) templ.Component {
 	_, ok := internalSvgData[name]
