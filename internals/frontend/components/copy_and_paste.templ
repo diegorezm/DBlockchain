@@ -1,0 +1,47 @@
+package components
+
+import "github.com/diegorezm/DBlockchain/internals/frontend/components/icons"
+
+templ CopyAndPaste(id, title, content string) {
+	<div class="mb-4">
+		<label for={ id } class="label">
+			<span class="label-text text-lg font-semibold">{ title }</span>
+		</label>
+		<div class="flex flex-col gap-2">
+			<textarea
+				id={ id }
+				class="textarea textarea-bordered w-full h-48 bg-base-200 text-base-content resize-none"
+				readonly
+				rows="8"
+				name={ id }
+			>{ content }</textarea>
+			<div>
+				<button
+					class="btn btn-sm  transition-colors delay-300"
+					:class="{
+          'btn-primary': copied === true,
+          'btn-outline': copied === false
+          }"
+					x-data="{ copied: false }"
+					x-on:click="
+        copyAndPaste()
+        copied = true
+        setTimeout(() => copied = false, 3000);
+                "
+				>
+					<span x-show="!copied">
+						@icons.Copy()
+					</span>
+					<span x-show="copied" class="flex items-center">
+						@icons.CopyCheck()
+					</span>
+				</button>
+			</div>
+		</div>
+		<script>
+    function copyAndPaste() {
+      navigator.clipboard.writeText(document.getElementById({{ id }}).value);
+      }
+  </script>
+	</div>
+}

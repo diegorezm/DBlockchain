@@ -1,0 +1,50 @@
+package wallet_page
+
+import (
+	"github.com/diegorezm/DBlockchain/internals/frontend/components"
+	"github.com/diegorezm/DBlockchain/internals/frontend/components/icons"
+	"github.com/diegorezm/DBlockchain/internals/frontend/layout"
+)
+
+templ CreateWalletPage() {
+	@layout.DashboardLayout("/wallet") {
+		<main class="p-6 max-w-4xl mx-auto">
+			<nav class="mb-6 space-y-2">
+				<a href="/wallet" class="btn btn-sm btn-outline">
+					@icons.ChevronLeft()
+					Go back
+				</a>
+				<h1 class="text-3xl font-bold ">Create a wallet</h1>
+			</nav>
+			<form action="/api/wallet/generate" method="post" x-target="pub_priv_key" class="mb-4">
+				<button class="btn btn-md btn-primary">
+					@icons.RefreshCW()
+					Generate new keys
+				</button>
+			</form>
+			@PublicAndPrivateKeyGeneration("Placeholder", "Placeholder", false)
+		</main>
+	}
+}
+
+templ PublicAndPrivateKeyGeneration(pubKey string, privKey string, btnEnabled bool) {
+	<div id="pub_priv_key" class="mt-8">
+		<div class="flex flex-row gap-6">
+			@components.CopyAndPaste("pubKey", "Public key", pubKey)
+			@components.CopyAndPaste("privKey", "Private key", privKey)
+		</div>
+		<form action="/api/wallet/save" method="post" aria-disabled={ btnEnabled }>
+			if !btnEnabled {
+				<button class="btn btn-sm btn-primary" disabled={ btnEnabled }>
+					@icons.Save()
+					Save
+				</button>
+			} else {
+				<button class="btn btn-sm btn-primary">
+					@icons.Save()
+					Save
+				</button>
+			}
+		</form>
+	</div>
+}

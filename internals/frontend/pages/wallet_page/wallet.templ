@@ -1,0 +1,33 @@
+package wallet_page
+
+import "github.com/diegorezm/DBlockchain/internals/frontend/layout"
+
+templ WalletPage(currentPublicKey string) {
+	@layout.DashboardLayout("/wallet") {
+		<main class="p-6 max-w-2xl mx-auto">
+			<h1 class="text-3xl font-bold mb-6">Wallet</h1>
+			if currentPublicKey == "" {
+				<form method="POST" action="/wallet/set-key" class="space-y-4">
+					<label class="label">
+						<span class="label-text">Paste your public key:</span>
+					</label>
+					<textarea name="public_key" class="textarea textarea-bordered w-full h-32" required></textarea>
+					<button class="btn btn-primary" type="submit">Set Key</button>
+				</form>
+				<div class="mt-6 text-sm text-center">
+					<span>Don't have a wallet yet?</span>
+					<a href="/wallet/create" class="link-secondary">Create one</a>
+				</div>
+			} else {
+				<div class="mb-4">
+					<p class="text-sm text-muted">Your public key:</p>
+					<pre class="p-2 bg-base-200 rounded">{ currentPublicKey }</pre>
+				</div>
+				<a href="/wallet/unset-key" class="btn btn-outline btn-sm mb-6">Forget Key</a>
+				<div class="card bg-base-100 p-4 shadow">
+					<h2 class="text-xl font-semibold mb-2">UTXOs</h2>
+				</div>
+			}
+		</main>
+	}
+}

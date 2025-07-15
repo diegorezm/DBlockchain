@@ -10,7 +10,7 @@ type link struct {
 
 templ Sidebar(currentPath string) {
 	<aside
-		class="h-[calc(100vh-20px)] w-[300px] px-2 py-4 border-2 border-surface bg-surface text-on-surface fixed left-0 top-0 m-2  rounded-lg"
+		class="h-[calc(100vh-20px)] w-[300px] px-4 py-6 border border-neutral-content bg-base-100 text-base-content fixed left-0 top-0 m-2  rounded-lg shadow-lg"
 	>
 		<div class="inline-flex gap-2 items-center">
 			<svg width="45" height="25" viewBox="0 0 59 38" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -21,15 +21,13 @@ templ Sidebar(currentPath string) {
 			</svg>
 			<h1 class="text-lg font-semibold">DBlockchain</h1>
 		</div>
-		<div class="h-0.5 bg-foreground mt-2 mb-4"></div>
-		<ul class="flex flex-col gap-3 w-full">
+		<div class="divider"></div>
+		<ul class="flex flex-col gap-2 w-full">
 			for _, link := range getLinksToRender() {
 				{{ isCurrentPath := link.href == currentPath }}
-				<li class="w-full">
+				<li>
 					<a href={ templ.URL(link.href) } class={ getLinkStyles(), getActiveLinkStyles(isCurrentPath) }>
-						@icons.GetIconFromString(link.icon)(icons.Props{
-							Size: 20,
-						})
+						@icons.GetIconFromString(link.icon)(icons.Props{Size: 20})
 						{ link.title }
 					</a>
 				</li>
@@ -38,26 +36,23 @@ templ Sidebar(currentPath string) {
 	</aside>
 }
 
-// i have to do this because the templ autoformat breaks the code all the time
-// i have no idea why
-// i am not going to fix it
 func getLinkStyles() string {
-	styles := "flex justify-center items-center px-2 py-1 w-full h-full rounded-lg text-lg font-semibold transition-colors"
-	styles += "duration-200 gap-2"
-	return styles
+	return "flex items-center px-3 py-2 gap-2 rounded-lg text-base font-semibold transition-colors duration-200"
 }
 
 func getLinksToRender() []link {
 	return []link{
-		{href: "/wallet", title: "Wallet", icon: "wallet"},
 		{href: "/blocks", title: "Blocks", icon: "blocks"},
 		{href: "/transactions", title: "Transactions", icon: "clock"},
+		{href: "/wallet", title: "Wallet", icon: "wallet"},
 	}
 }
 
 func getActiveLinkStyles(isActive bool) string {
 	if isActive {
-		return "bg-primary text-primary-foreground"
+		// Active link uses primary background and contrast text
+		return "bg-primary text-primary-content"
 	}
-	return "text-on-surface border-2 border-primary hover:bg-primary hover:text-primary-foreground"
+	// Inactive link with hover transition
+	return "border border-primary text-base-content hover:bg-primary hover:text-primary-content"
 }

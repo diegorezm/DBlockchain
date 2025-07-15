@@ -3,8 +3,10 @@ package handlers
 import (
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/diegorezm/DBlockchain/internals/blockchain"
+	"github.com/diegorezm/DBlockchain/internals/frontend/pages/blocks_page"
 	"github.com/diegorezm/DBlockchain/internals/utils"
 	webutils "github.com/diegorezm/DBlockchain/internals/web_utils"
 	"github.com/go-chi/chi/v5"
@@ -22,7 +24,7 @@ func NewBlockchainClientHandler(bl *blockchain.Blockchain) *BlockchainClientHand
 
 func (bc *BlockchainClientHandler) GetChain(w http.ResponseWriter, r *http.Request) {
 	chain := bc.blockchain.Chain
-	webutils.WriteJSON[[]blockchain.Block](w, 200, chain, "Blocks fetched")
+	webutils.WriteJSON(w, 200, chain, "Blocks fetched")
 }
 
 func (bc *BlockchainClientHandler) Mine(w http.ResponseWriter, r *http.Request) {
@@ -30,7 +32,12 @@ func (bc *BlockchainClientHandler) Mine(w http.ResponseWriter, r *http.Request) 
 		webutils.WriteInternalServerError(w, fmt.Sprintf("Failed to mine new block: %v", err))
 		return
 	}
-	webutils.WriteJSON[any](w, http.StatusCreated, nil, "New block mined successfully!")
+	time.Sleep(time.Duration(5000))
+	chain := bc.blockchain.Chain
+	table := blocks_page.BlocksTable(chain)
+	w.Header().Set("Content-Type", "text/html")
+	table.Render(r.Context(), w)
+	// webutils.WriteJSON[any](w, http.StatusCreated, nil, "New block mined successfully!")
 }
 
 type appendTransactionInput struct {

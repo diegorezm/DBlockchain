@@ -68,7 +68,7 @@ func generateSVG(name string, props Props) (string, error) {
 
 	if size <= 0 {
 
-		size = 24
+		size = 20
 
 	}
 

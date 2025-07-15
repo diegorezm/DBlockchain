@@ -20,12 +20,13 @@
   },
   "dependencies": {
     "@imacrayon/alpine-ajax": "^0.12.4",
-    "@tailwindcss/cli": "^4.1.11",
-    "alpinejs": "^3.14.9",
-    "tailwindcss": "^4.1.11"
+    "alpinejs": "^3.14.9"
   },
   "devDependencies": {
+    "@tailwindcss/cli": "^4.1.11",
+    "tailwindcss": "^4.1.11",
     "@biomejs/biome": "2.0.6",
+    "daisyui": "^5.0.46",
     "globals": "^16.2.0",
     "ultracite": "5.0.32"
   }

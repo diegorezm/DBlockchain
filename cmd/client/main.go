@@ -51,6 +51,7 @@ func registerHandlers(r *chi.Mux, blockchain *bl.Blockchain) {
 	r.Route("/", func(r chi.Router) {
 		r.Get("/", frontendHandler.GetIndexPage)
 		r.Get("/wallet", frontendHandler.GetWalletPage)
+		r.Get("/wallet/create", frontendHandler.GetCreateWalletPage)
 		r.Get("/blocks", frontendHandler.GetBlocksPage)
 		r.Get("/transactions", frontendHandler.GetTransactionsPage)
 	})

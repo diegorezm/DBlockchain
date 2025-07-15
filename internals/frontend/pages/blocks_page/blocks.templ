@@ -1,0 +1,24 @@
+package blocks_page
+
+import (
+	"github.com/diegorezm/DBlockchain/internals/blockchain"
+	"github.com/diegorezm/DBlockchain/internals/frontend/components/icons"
+	"github.com/diegorezm/DBlockchain/internals/frontend/layout"
+)
+
+templ BlocksPage(blocks []blockchain.Block) {
+	@layout.DashboardLayout("/blocks") {
+		<main>
+			<h1 class="text-3xl font-bold mb-6 ">Blocks</h1>
+			<form action="/api/chain/mine" method="post" x-target="blocks_table" class="mb-3">
+				<button class="btn btn-primary btn-md">
+					@icons.Pickaxe(icons.Props{
+						Size: 20,
+					})
+					Mine
+				</button>
+			</form>
+			@BlocksTable(blocks)
+		</main>
+	}
+}

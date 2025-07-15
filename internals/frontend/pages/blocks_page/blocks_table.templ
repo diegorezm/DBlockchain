@@ -1,0 +1,26 @@
+package blocks_page
+
+import "github.com/diegorezm/DBlockchain/internals/blockchain"
+
+templ BlocksTable(blocks []blockchain.Block) {
+	<div class="overflow-x-auto rounded-box border border-base-content/5 bg-base-100" id="blocks_table">
+		<table class="table">
+			<thead>
+				<tr>
+					<th>#</th>
+					<th>Hash</th>
+					<th>Timestamp</th>
+				</tr>
+			</thead>
+			<tbody>
+				for _, b := range blocks {
+					<tr>
+						<th class="text-center">{ b.Index }</th>
+						<td>{ b.Hash }</td>
+						<td class="text-center">{ b.Timestamp }</td>
+					</tr>
+				}
+			</tbody>
+		</table>
+	</div>
+}

@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/diegorezm/DBlockchain/internals/blockchain"
+	"github.com/diegorezm/DBlockchain/internals/frontend/pages/wallet_page"
 	"github.com/diegorezm/DBlockchain/internals/utils"
 	webutils "github.com/diegorezm/DBlockchain/internals/web_utils"
 	"github.com/go-chi/chi/v5"
@@ -40,10 +41,12 @@ func (wh *WalletHandler) Generate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	webutils.WriteSuccess(w, keypair, "Key pair generated")
+	page := wallet_page.PublicAndPrivateKeyGeneration(keypair.PublicKey, keypair.PrivateKey, true)
+	w.Header().Set("Content-Type", "text/html")
+	page.Render(r.Context(), w)
 }
 
 func (wh *WalletHandler) Register(r chi.Router) {
-	r.Get("/wallet/generate", wh.Generate)
+	r.Post("/wallet/generate", wh.Generate)
 	r.Get("/wallet/utxos/{address}", wh.GetUTXOsByAddress)
 }
