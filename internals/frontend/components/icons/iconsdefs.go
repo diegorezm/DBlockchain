@@ -14,6 +14,9 @@ var ChevronLeft = Icon("chevron-left")
 var RefreshCW = Icon("refresh-cw")
 var Save = Icon("save")
 var HandCoins = Icon("hand-coins")
+var Info = Icon("info")
+var Warning = Icon("warning")
+var Error = Icon("error")
 
 func GetIconFromString(name string) func(...Props) templ.Component {
 	_, ok := internalSvgData[name]

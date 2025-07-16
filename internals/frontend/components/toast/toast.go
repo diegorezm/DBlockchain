@@ -1,3 +1,0 @@
-package toast
-
-templ Toast(){}

@@ -1,0 +1,50 @@
+package alerts
+
+import "fmt"
+import "github.com/diegorezm/DBlockchain/internals/frontend/components/icons"
+
+type AlertVariant string
+
+const (
+	Error   AlertVariant = "error"
+	Info    AlertVariant = "info"
+	Warning AlertVariant = "warning"
+)
+
+type Props struct {
+	Variant AlertVariant
+	Message string
+}
+
+templ Alerts(props Props) {
+	<div role="alert" class={ fmt.Sprintf("alert %s", getAlertClassName(props.Variant)) } id="alert">
+		@getAlertIcon(props.Variant)
+		<span>{ props.Message }</span>
+	</div>
+}
+
+templ getAlertIcon(variant AlertVariant) {
+	switch variant {
+		case Error:
+			@icons.Error()
+		case Info:
+			@icons.Info()
+		case Warning:
+			@icons.Warning()
+		default:
+			@icons.Info()
+	}
+}
+
+func getAlertClassName(varaint AlertVariant) string {
+	switch varaint {
+	case Error:
+		return "alert-error"
+	case Info:
+		return "alert-info"
+	case Warning:
+		return "alert-warning"
+	default:
+		return ""
+	}
+}
