@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 @plugin "daisyui" {
-  themes: sunset;
+  themes: caramellatte;
 }
 
 *[aria-busy="true"] {

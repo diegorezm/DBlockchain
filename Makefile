@@ -7,7 +7,8 @@ SERVER_OUTPUT_PATH=./bin/Dblockchain_server
 clean:
 	@rm -rf bin
 
-build_client:
+build_client: build-deps tailwind
+	@mv ./internals/frontend/static/favicon.svg  ./internals/frontend/assets/favicon.svg
 	@go build -o $(CLIENT_OUTPUT_PATH) $(CLIENT_PATH)
 	@chmod +x $(CLIENT_OUTPUT_PATH)
 
@@ -45,6 +46,9 @@ tailwind-dev:
 
 tailwind:
 	bun run tailwind:build
+
+build-deps:
+	@bun run build-deps
 
 dev:
 	make -j3 tailwind-dev templ-dev dev-server
