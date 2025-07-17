@@ -4,7 +4,6 @@ import "github.com/diegorezm/DBlockchain/internals/frontend/components/icons"
 import "fmt"
 
 templ CopyAndPaste(id, title, content string) {
-	{{ onClick := fmt.Sprintf("copyAndPaste(%s);copied = false;setTimeout(() => copied = false, 2000);", id) }}
 	<div class="mb-4 w-full">
 		<label for={ id } class="label">
 			<span class="label-text text-lg font-semibold">{ title }</span>
@@ -24,8 +23,14 @@ templ CopyAndPaste(id, title, content string) {
           'btn-primary': copied === true,
           'btn-outline': copied === false
           }"
-					x-data="{ copied: false }"
-					x-on:click={ onClick }
+					x-data={ fmt.Sprintf("{ copied: false , el: '%s' }", id) }
+					x-on:click="
+            copyAndPaste(el)
+            copied = true
+            setTimeout(() => {
+              copied = false
+            }, 2000)
+          "
 				>
 					<span x-show="!copied">
 						@icons.Copy()

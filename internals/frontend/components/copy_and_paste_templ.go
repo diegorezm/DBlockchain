@@ -32,7 +32,6 @@ func CopyAndPaste(id, title, content string) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		onClick := fmt.Sprintf("copyAndPaste(%s);copied = false;setTimeout(() => copied = false, 2000);", id)
 		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"mb-4 w-full\"><label for=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
@@ -40,7 +39,7 @@ func CopyAndPaste(id, title, content string) templ.Component {
 		var templ_7745c5c3_Var2 string
 		templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(id)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internals/frontend/components/copy_and_paste.templ`, Line: 9, Col: 17}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internals/frontend/components/copy_and_paste.templ`, Line: 8, Col: 17}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
 		if templ_7745c5c3_Err != nil {
@@ -53,7 +52,7 @@ func CopyAndPaste(id, title, content string) templ.Component {
 		var templ_7745c5c3_Var3 string
 		templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(title)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internals/frontend/components/copy_and_paste.templ`, Line: 10, Col: 57}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internals/frontend/components/copy_and_paste.templ`, Line: 9, Col: 57}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 		if templ_7745c5c3_Err != nil {
@@ -66,7 +65,7 @@ func CopyAndPaste(id, title, content string) templ.Component {
 		var templ_7745c5c3_Var4 string
 		templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(id)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internals/frontend/components/copy_and_paste.templ`, Line: 14, Col: 11}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internals/frontend/components/copy_and_paste.templ`, Line: 13, Col: 11}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 		if templ_7745c5c3_Err != nil {
@@ -79,7 +78,7 @@ func CopyAndPaste(id, title, content string) templ.Component {
 		var templ_7745c5c3_Var5 string
 		templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(id)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internals/frontend/components/copy_and_paste.templ`, Line: 18, Col: 13}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internals/frontend/components/copy_and_paste.templ`, Line: 17, Col: 13}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 		if templ_7745c5c3_Err != nil {
@@ -92,26 +91,26 @@ func CopyAndPaste(id, title, content string) templ.Component {
 		var templ_7745c5c3_Var6 string
 		templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(content)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internals/frontend/components/copy_and_paste.templ`, Line: 19, Col: 13}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internals/frontend/components/copy_and_paste.templ`, Line: 18, Col: 13}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "</textarea><div><button class=\"btn btn-sm  transition-colors delay-150\" :class=\"{\n          'btn-primary': copied === true,\n          'btn-outline': copied === false\n          }\" x-data=\"{ copied: false }\" x-on:click=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "</textarea><div><button class=\"btn btn-sm  transition-colors delay-150\" :class=\"{\n          'btn-primary': copied === true,\n          'btn-outline': copied === false\n          }\" x-data=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var7 string
-		templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(onClick)
+		templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("{ copied: false , el: '%s' }", id))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internals/frontend/components/copy_and_paste.templ`, Line: 28, Col: 25}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internals/frontend/components/copy_and_paste.templ`, Line: 26, Col: 61}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "\"><span x-show=\"!copied\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "\" x-on:click=\"\n            copyAndPaste(el)\n            copied = true\n            setTimeout(() => {\n              copied = false\n            }, 2000)\n          \"><span x-show=\"!copied\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
