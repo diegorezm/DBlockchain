@@ -8,7 +8,6 @@ clean:
 	@rm -rf bin
 
 build_client: build-deps tailwind
-	@mv ./internals/frontend/static/favicon.svg  ./internals/frontend/assets/favicon.svg
 	@go build -o $(CLIENT_OUTPUT_PATH) $(CLIENT_PATH)
 	@chmod +x $(CLIENT_OUTPUT_PATH)
 
@@ -49,8 +48,9 @@ tailwind:
 
 build-deps:
 	@bun run build-deps
+	@cp ./internals/frontend/static/favicon.svg  ./internals/frontend/assets/favicon.svg
 
-dev:
+dev: build-deps
 	make -j3 tailwind-dev templ-dev dev-server
 
 prod:
