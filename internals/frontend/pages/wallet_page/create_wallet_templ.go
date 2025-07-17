@@ -110,11 +110,11 @@ func PublicAndPrivateKeyGeneration(pubKey string, privKey string, btnEnabled boo
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = components.CopyAndPaste("pubKey", "Public key", pubKey).Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = components.CopyAndPaste("public_key", "Public key", pubKey).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = components.CopyAndPaste("privKey", "Private key", privKey).Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = components.CopyAndPaste("private_key", "Private key", privKey).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

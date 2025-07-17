@@ -25,15 +25,11 @@ func (h *FrontendHandler) GetIndexPage(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *FrontendHandler) GetWalletPage(w http.ResponseWriter, r *http.Request) {
-	var publicKey string
 	var utxos []blockchain.UTXO
 
-	publicKeyCookie, err := r.Cookie("public-key")
+	publicKey := getPublicKeyFromCookies(r)
 
-	if err != nil {
-		publicKey = ""
-	} else {
-		publicKey = publicKeyCookie.Value
+	if publicKey != "" {
 		utxos = h.blockchain.GetUTXPoolByAddress(publicKey)
 	}
 
@@ -63,8 +59,12 @@ func (h *FrontendHandler) GetBlocksPage(w http.ResponseWriter, r *http.Request) 
 }
 
 func (h *FrontendHandler) GetTransactionsPage(w http.ResponseWriter, r *http.Request) {
-	transactionsPage := transactions_page.TransactionsPage()
+	publicKey := getPublicKeyFromCookies(r)
+
+	transactionsPage := transactions_page.TransactionsPage(publicKey, h.blockchain.TransactionsMempool)
+
 	ctx := r.Context()
+
 	if err := transactionsPage.Render(ctx, w); err != nil {
 		webutils.WriteInternalServerError(w, err.Error())
 	}
@@ -74,4 +74,15 @@ func (h *FrontendHandler) ServeAssets(r chi.Router) {
 	r.Use(middleware.StripSlashes)
 	fileServer := http.FileServer(http.Dir("./internals/frontend/assets"))
 	r.Handle("/*", http.StripPrefix("/assets", fileServer))
+}
+
+func getPublicKeyFromCookies(r *http.Request) string {
+	publicKeyCookie, err := r.Cookie("public-key")
+
+	if err != nil {
+		return ""
+	} else {
+		return publicKeyCookie.Value
+	}
+
 }

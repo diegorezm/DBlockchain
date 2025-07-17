@@ -17,23 +17,52 @@ type Props struct {
 }
 
 templ Alerts(props Props) {
-	<div role="alert" class={ fmt.Sprintf("alert %s", getAlertClassName(props.Variant)) } id="alert">
+	<div
+		role="alert"
+		class={ fmt.Sprintf("mt-2 mb-2 alert %s", getAlertClassName(props.Variant)) }
+		id={ fmt.Sprintf("alert-%s", props.Variant) }
+		x-data="{show: true}"
+		x-show="show"
+	>
 		@getAlertIcon(props.Variant)
 		<span>{ props.Message }</span>
 	</div>
 }
 
+templ AlertError(message string) {
+	@Alerts(Props{
+		Variant: Error,
+		Message: message,
+	})
+}
+
+templ AlertInfo(message string) {
+	@Alerts(Props{
+		Variant: Info,
+		Message: message,
+	})
+}
+
+templ AlertWarning(message string) {
+	@Alerts(Props{
+		Variant: Warning,
+		Message: message,
+	})
+}
+
 templ getAlertIcon(variant AlertVariant) {
-	switch variant {
-		case Error:
-			@icons.Error()
-		case Info:
-			@icons.Info()
-		case Warning:
-			@icons.Warning()
-		default:
-			@icons.Info()
-	}
+	<button @click="show = false" class="btn btn-sm btn-ghost">
+		switch variant {
+			case Error:
+				@icons.Error()
+			case Info:
+				@icons.Info()
+			case Warning:
+				@icons.Warning()
+			default:
+				@icons.Info()
+		}
+	</button>
 }
 
 func getAlertClassName(varaint AlertVariant) string {

@@ -1,0 +1,35 @@
+package wallet_page
+
+import "github.com/diegorezm/DBlockchain/internals/blockchain"
+
+templ UTXOTable(utxos []blockchain.UTXO) {
+	<div id="utxo_table">
+		<p class="mt-4 font-semibold text-sm">Balance: { calcBalance(utxos) } dcoins</p>
+		<div class="overflow-x-auto rounded-box border border-base-content/5 bg-base-100">
+			<table class="table">
+				<thead>
+					<tr>
+						<th class="w-[80%]">Tx Id</th>
+						<th class="w-[20%]">Amount</th>
+					</tr>
+				</thead>
+				<tbody>
+					for _, u := range utxos {
+						<tr>
+							<th class="truncate">{ u.TxId }</th>
+							<td class="text-center">{ u.Output.Amount }</td>
+						</tr>
+					}
+				</tbody>
+			</table>
+		</div>
+	</div>
+}
+
+func calcBalance(utxos []blockchain.UTXO) float64 {
+	balance := float64(0)
+	for _, u := range utxos {
+		balance += u.Output.Amount
+	}
+	return balance
+}

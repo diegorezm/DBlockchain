@@ -30,8 +30,8 @@ templ CreateWalletPage() {
 templ PublicAndPrivateKeyGeneration(pubKey string, privKey string, btnEnabled bool) {
 	<div id="pub_priv_key" class="mt-8 spacey-4">
 		<div class="flex flex-row gap-6">
-			@components.CopyAndPaste("pubKey", "Public key", pubKey)
-			@components.CopyAndPaste("privKey", "Private key", privKey)
+			@components.CopyAndPaste("public_key", "Public key", pubKey)
+			@components.CopyAndPaste("private_key", "Private key", privKey)
 		</div>
 		<form action="/api/wallet/save-key" method="post" id="save_wallet_form">
 			<input type="text" value={ pubKey } name="pubKey" hidden/>

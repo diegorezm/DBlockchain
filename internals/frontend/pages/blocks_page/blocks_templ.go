@@ -47,7 +47,7 @@ func BlocksPage(blocks []blockchain.Block) templ.Component {
 				}()
 			}
 			ctx = templ.InitializeContext(ctx)
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<main><h1 class=\"text-3xl font-bold mb-6 \">Blocks</h1><form action=\"/api/chain/mine\" method=\"post\" x-target=\"blocks_table\" class=\"mb-3\"><button class=\"btn btn-primary btn-md\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<main class=\"max-w-2xl w-full\"><h1 class=\"text-3xl font-bold mb-6 \">Blocks</h1><form action=\"/api/chain/mine\" method=\"post\" x-target=\"blocks_table\" class=\"mb-3\"><button class=\"btn btn-primary btn-md\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

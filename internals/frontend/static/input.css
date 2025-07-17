@@ -5,7 +5,7 @@
 }
 
 *[aria-busy="true"] {
-  opacity: 0.9;
+  @apply opacity-40 cursor-not-allowed;
 }
 
 body {

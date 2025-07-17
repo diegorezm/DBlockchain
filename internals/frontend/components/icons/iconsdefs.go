@@ -17,6 +17,7 @@ var HandCoins = Icon("hand-coins")
 var Info = Icon("info")
 var Warning = Icon("warning")
 var Error = Icon("error")
+var Handshake = Icon("handshake")
 
 func GetIconFromString(name string) func(...Props) templ.Component {
 	_, ok := internalSvgData[name]

@@ -1,11 +1,68 @@
 package transactions_page
 
 import "github.com/diegorezm/DBlockchain/internals/frontend/layout"
+import "github.com/diegorezm/DBlockchain/internals/frontend/components/icons"
+import "github.com/diegorezm/DBlockchain/internals/blockchain"
 
-templ TransactionsPage() {
+templ TransactionsPage(currentPublicKey string, mempool []blockchain.Transaction) {
 	@layout.DashboardLayout("/transactions") {
-		<main>
+		<main class="max-w-2xl w-full">
 			<h1 class="text-3xl font-bold mb-6">Transactions</h1>
+			<div id="alert-info"></div>
+			<nav>
+				@createTransactionDialog(currentPublicKey)
+			</nav>
+			<div id="alert-info"></div>
+			<h1 class="mt-2 text-md font-semibold">Mempool</h1>
+			@TransactionsMempoolTable(mempool)
 		</main>
 	}
+}
+
+templ createTransactionDialog(publicKey string) {
+	<button class="btn btn-primary btn-md" onclick="create_transaction_modal.showModal()">
+		@icons.Handshake()
+		Create transaction
+	</button>
+	<dialog id="create_transaction_modal" class="modal">
+		<div class="modal-box">
+			<form
+				action="/api/transactions/add"
+				method="post"
+				x-target="alert-info alert-warning alert-error"
+				x-init
+				@ajax:error="$event.preventDefault()"
+				class="mb-4"
+				@ajax:success="
+              const html = $event.detail.raw;
+              if (html.includes('alert-info')) {
+                $el.reset();
+                create_transaction_modal.close();
+              }
+              "
+			>
+				<label class="label">Private Key</label>
+				<textarea class="textarea textarea-bordered w-full mb-2" required name="private_key" x-autofocus></textarea>
+				<input required value={ publicKey } name="from" hidden/>
+				<label class="label">To</label>
+				<textarea
+					class="textarea textarea-bordered w-full mb-2"
+					required
+					placeholder="Someone else public key..."
+					name="to"
+				></textarea>
+				<label class="label">Amount</label>
+				<input type="number" class="input input-bordered w-full mb-4" required min="1" name="amount"/>
+				<div class="modal-action">
+					<button class="btn btn-md btn-outline" type="button" onclick="create_transaction_modal.close()">Cancel</button>
+					<button class="btn btn-md btn-primary" type="submit">Confirm</button>
+				</div>
+			</form>
+			<div id="alert-error"></div>
+			<div id="alert-warning"></div>
+		</div>
+		<form method="dialog" class="modal-backdrop">
+			<button>close</button>
+		</form>
+	</dialog>
 }

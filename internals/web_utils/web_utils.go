@@ -1,10 +1,14 @@
 package webutils
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
+
+	"github.com/a-h/templ"
 )
 
 // --- Client-side utilities ---
@@ -102,4 +106,13 @@ func WriteInternalServerError(w http.ResponseWriter, errMsg string) {
 
 func WriteCustomError(w http.ResponseWriter, statusCode int, errMsg string) {
 	WriteError(w, statusCode, errMsg)
+}
+
+func WriteTempl(w http.ResponseWriter, _status int, component templ.Component, ctx context.Context) {
+	w.Header().Set("Content-Type", "text/html")
+	// TODO: Come back to this once alpine-ajax is less annoying
+	// w.WriteHeader(status)
+	if err := component.Render(ctx, w); err != nil {
+		log.Printf("templ render error: %v", err)
+	}
 }

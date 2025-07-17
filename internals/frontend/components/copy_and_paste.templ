@@ -1,8 +1,10 @@
 package components
 
 import "github.com/diegorezm/DBlockchain/internals/frontend/components/icons"
+import "fmt"
 
 templ CopyAndPaste(id, title, content string) {
+	{{ onClick := fmt.Sprintf("copyAndPaste(%s);copied = false;setTimeout(() => copied = false, 2000);", id) }}
 	<div class="mb-4 w-full">
 		<label for={ id } class="label">
 			<span class="label-text text-lg font-semibold">{ title }</span>
@@ -23,11 +25,7 @@ templ CopyAndPaste(id, title, content string) {
           'btn-outline': copied === false
           }"
 					x-data="{ copied: false }"
-					x-on:click="
-        copyAndPaste()
-        copied = true
-        setTimeout(() => copied = false, 2000);
-                "
+					x-on:click={ onClick }
 				>
 					<span x-show="!copied">
 						@icons.Copy()
@@ -39,9 +37,11 @@ templ CopyAndPaste(id, title, content string) {
 			</div>
 		</div>
 		<script>
-    function copyAndPaste() {
-      navigator.clipboard.writeText(document.getElementById({{ id }}).value);
-      }
+    // If you are reading this, you probably realized that i am passing the ID not the element!
+    // i have no idea why this works
+    function copyAndPaste(el) {
+      navigator.clipboard.writeText(el.value);
+    }
   </script>
 	</div>
 }

@@ -72,14 +72,16 @@ func (wh *WalletHandler) SavePubKey(w http.ResponseWriter, r *http.Request) {
 }
 
 func (wh *WalletHandler) ForgetPublicKey(w http.ResponseWriter, r *http.Request) {
-	http.SetCookie(w, &http.Cookie{
+	c := &http.Cookie{
 		Name:     "public-key",
-		Value:    "",
+		Value:    "deleted",
 		Path:     "/",
 		Expires:  time.Unix(0, 0),
 		MaxAge:   -1,
 		HttpOnly: true,
-	})
+		Secure:   false,
+	}
+	http.SetCookie(w, c)
 	http.Redirect(w, r, "/wallet", http.StatusSeeOther)
 }
 

@@ -9,8 +9,10 @@ import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
 import "github.com/diegorezm/DBlockchain/internals/frontend/layout"
+import "github.com/diegorezm/DBlockchain/internals/frontend/components/icons"
+import "github.com/diegorezm/DBlockchain/internals/blockchain"
 
-func TransactionsPage() templ.Component {
+func TransactionsPage(currentPublicKey string, mempool []blockchain.Transaction) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -43,13 +45,79 @@ func TransactionsPage() templ.Component {
 				}()
 			}
 			ctx = templ.InitializeContext(ctx)
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<main><h1 class=\"text-3xl font-bold mb-6\">Transactions</h1></main>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<main class=\"max-w-2xl w-full\"><h1 class=\"text-3xl font-bold mb-6\">Transactions</h1><div id=\"alert-info\"></div><nav>")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = createTransactionDialog(currentPublicKey).Render(ctx, templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</nav><div id=\"alert-info\"></div><h1 class=\"mt-2 text-md font-semibold\">Mempool</h1>")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = TransactionsMempoolTable(mempool).Render(ctx, templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "</main>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			return nil
 		})
 		templ_7745c5c3_Err = layout.DashboardLayout("/transactions").Render(templ.WithChildren(ctx, templ_7745c5c3_Var2), templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		return nil
+	})
+}
+
+func createTransactionDialog(publicKey string) templ.Component {
+	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
+		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
+		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
+			return templ_7745c5c3_CtxErr
+		}
+		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templruntime.GetBuffer(templ_7745c5c3_W)
+		if !templ_7745c5c3_IsBuffer {
+			defer func() {
+				templ_7745c5c3_BufErr := templruntime.ReleaseBuffer(templ_7745c5c3_Buffer)
+				if templ_7745c5c3_Err == nil {
+					templ_7745c5c3_Err = templ_7745c5c3_BufErr
+				}
+			}()
+		}
+		ctx = templ.InitializeContext(ctx)
+		templ_7745c5c3_Var3 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var3 == nil {
+			templ_7745c5c3_Var3 = templ.NopComponent
+		}
+		ctx = templ.ClearChildren(ctx)
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "<button class=\"btn btn-primary btn-md\" onclick=\"create_transaction_modal.showModal()\">")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = icons.Handshake().Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "Create transaction</button> <dialog id=\"create_transaction_modal\" class=\"modal\"><div class=\"modal-box\"><form action=\"/api/transactions/add\" method=\"post\" x-target=\"alert-info alert-warning alert-error\" x-init @ajax:error=\"$event.preventDefault()\" class=\"mb-4\" @ajax:success=\"\n              const html = $event.detail.raw;\n              if (html.includes('alert-info')) {\n                $el.reset();\n                create_transaction_modal.close();\n              }\n              \"><label class=\"label\">Private Key</label> <textarea class=\"textarea textarea-bordered w-full mb-2\" required name=\"private_key\" x-autofocus></textarea> <input required value=\"")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		var templ_7745c5c3_Var4 string
+		templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(publicKey)
+		if templ_7745c5c3_Err != nil {
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internals/frontend/pages/transactions_page/transactions.templ`, Line: 46, Col: 37}
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "\" name=\"from\" hidden> <label class=\"label\">To</label> <textarea class=\"textarea textarea-bordered w-full mb-2\" required placeholder=\"Someone else public key...\" name=\"to\"></textarea> <label class=\"label\">Amount</label> <input type=\"number\" class=\"input input-bordered w-full mb-4\" required min=\"1\" name=\"amount\"><div class=\"modal-action\"><button class=\"btn btn-md btn-outline\" type=\"button\" onclick=\"create_transaction_modal.close()\">Cancel</button> <button class=\"btn btn-md btn-primary\" type=\"submit\">Confirm</button></div></form><div id=\"alert-error\"></div><div id=\"alert-warning\"></div></div><form method=\"dialog\" class=\"modal-backdrop\"><button>close</button></form></dialog>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

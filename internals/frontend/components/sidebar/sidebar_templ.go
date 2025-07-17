@@ -115,7 +115,7 @@ func getLinkStyles() string {
 func getLinksToRender() []link {
 	return []link{
 		{href: "/blocks", title: "Blocks", icon: "blocks"},
-		{href: "/transactions", title: "Transactions", icon: "clock"},
+		{href: "/transactions", title: "Transactions", icon: "handshake"},
 		{href: "/wallet", title: "Wallet", icon: "wallet"},
 	}
 }

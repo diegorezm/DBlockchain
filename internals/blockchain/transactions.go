@@ -22,6 +22,12 @@ type TxIn struct {
 	Signature  string `json:"signature"`
 }
 
+type UTXO struct {
+	TxId   string `json:"tx_id"`
+	Index  int64  `json:"index"`
+	Output TxOut  `json:"output"`
+}
+
 type Transaction struct {
 	Id       string  `json:"id"`
 	TxIns    []TxIn  `json:"tx_ins"`
@@ -33,12 +39,6 @@ type TransactionInput struct {
 	TxIns    []TxIn  `json:"tx_ins"`
 	TxOuts   []TxOut `json:"tx_outs"`
 	IsSystem bool    `json:"is_system"`
-}
-
-type UTXO struct {
-	TxId   string
-	Index  int64
-	Output TxOut
 }
 
 func generateTransactionId(txIns []TxIn, txOuts []TxOut) (string, error) {

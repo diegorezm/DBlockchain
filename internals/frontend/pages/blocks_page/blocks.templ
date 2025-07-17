@@ -8,7 +8,7 @@ import (
 
 templ BlocksPage(blocks []blockchain.Block) {
 	@layout.DashboardLayout("/blocks") {
-		<main>
+		<main class="max-w-2xl w-full">
 			<h1 class="text-3xl font-bold mb-6 ">Blocks</h1>
 			<form action="/api/chain/mine" method="post" x-target="blocks_table" class="mb-3">
 				<button class="btn btn-primary btn-md">

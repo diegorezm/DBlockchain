@@ -9,7 +9,6 @@ import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
 import (
-	"fmt"
 	"github.com/diegorezm/DBlockchain/internals/blockchain"
 	"github.com/diegorezm/DBlockchain/internals/frontend/components"
 	"github.com/diegorezm/DBlockchain/internals/frontend/components/icons"
@@ -54,33 +53,20 @@ func WalletPage(currentPublicKey string, utxos []blockchain.UTXO) templ.Componen
 				return templ_7745c5c3_Err
 			}
 			if currentPublicKey == "" {
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<form method=\"post\" action=\"/api/wallet/save-key\" class=\"space-y-4\"><label class=\"label\"><span class=\"label-text\">Paste your public key:</span></label> <textarea name=\"pubKey\" class=\"textarea textarea-bordered w-full h-32\" required></textarea> <button class=\"btn btn-primary\" type=\"submit\">Set Key</button></form><div class=\"mt-6 text-sm text-center\"><span>Don't have a wallet yet?</span> <a href=\"/wallet/create\" class=\"link-secondary\">Create one</a></div>")
+				templ_7745c5c3_Err = savePublicKeyForm().Render(ctx, templ_7745c5c3_Buffer)
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 			} else {
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "<nav class=\"mb-6 w-full\"><button class=\"btn btn-md btn-primary\" onclick=\"buy_dcoins_modal.showModal()\">")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<nav class=\"mb-6 w-full\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = icons.HandCoins().Render(ctx, templ_7745c5c3_Buffer)
+				templ_7745c5c3_Err = buyCoinsDialog(currentPublicKey).Render(ctx, templ_7745c5c3_Buffer)
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "Buy more dcoins!</button> <dialog id=\"buy_dcoins_modal\" class=\"modal\"><div class=\"modal-box\"><form x-data=\"")
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-				var templ_7745c5c3_Var3 string
-				templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("buyDcoinForm('%s')", currentPublicKey))
-				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internals/frontend/pages/wallet_page/wallet.templ`, Line: 35, Col: 73}
-				}
-				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "\" @submit.prevent=\"submit\"><label class=\"label\">Private Key</label> <textarea x-model=\"privateKey\" class=\"textarea textarea-bordered w-full mb-2\" required></textarea> <label class=\"label\">Amount</label> <input type=\"number\" x-model=\"amount\" class=\"input input-bordered w-full mb-4\" required min=\"1\"><div class=\"modal-action\"><button class=\"btn btn-md btn-outline\" type=\"button\" onclick=\"buy_dcoins_modal.close()\">Cancel</button> <button class=\"btn btn-md btn-primary\" type=\"submit\">Confirm</button></div><p class=\"text-success\" x-text=\"successMessage\"></p><p class=\"text-error\" x-text=\"errorMessage\"></p></form></div><form method=\"dialog\" class=\"modal-backdrop\"><button>close</button></form></dialog></nav><div class=\"mb-4 w-full\">")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "</nav><div id=\"alert-info\"></div><div class=\"mb-4 w-full\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
@@ -88,31 +74,101 @@ func WalletPage(currentPublicKey string, utxos []blockchain.UTXO) templ.Componen
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "</div><form action=\"/api/wallet/forget-key\" method=\"post\"><button class=\"btn btn-secondary btn-sm mb-4\">Forget key</button></form><div class=\"card bg-base-100 p-4 shadow\"><h2 class=\"text-xl font-semibold mb-2\">UTXOs</h2><p>")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "</div><form action=\"/api/wallet/forget-key\" method=\"post\"><button class=\"btn btn-secondary btn-sm mb-4\">Forget key</button></form><h2 class=\"text-xl font-semibold mb-4\">UTXOs</h2>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				var templ_7745c5c3_Var4 string
-				templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(len(utxos))
-				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internals/frontend/pages/wallet_page/wallet.templ`, Line: 61, Col: 20}
-				}
-				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "</p></div>")
+				templ_7745c5c3_Err = UTXOTable(utxos).Render(ctx, templ_7745c5c3_Buffer)
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "<script>\n    document.addEventListener(\"alpine:init\", () => {\n      Alpine.data(\"buyDcoinForm\", (publicKey) => ({\n        privateKey: \"\",\n        amount: 1,\n        successMessage: \"\",\n        errorMessage: \"\",\n\n        async submit() {\n          this.successMessage = \"\";\n          this.errorMessage = \"\";\n\n          try {\n            const res = await fetch(\"/api/transactions/buy\", {\n              method: \"POST\",\n              headers: {\"Content-Type\": \"application/json\"},\n              body: JSON.stringify({\n                private_key: this.privateKey,\n                to: publicKey,\n                amount: parseFloat(this.amount),\n              }),\n            });\n\n            const data = await res.json();\n            if (res.ok) {\n              this.successMessage = data.message || \"Transaction submitted!\";\n              this.privateKey = \"\";\n              this.amount = 1;\n            } else {\n              this.errorMessage = data.message || \"Failed to create transaction.\";\n            }\n          } catch (err) {\n            this.errorMessage = \"Something went wrong.\";\n          }\n        }\n      }));\n    });\n  </script></main>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "</main>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			return nil
 		})
 		templ_7745c5c3_Err = layout.DashboardLayout("/wallet").Render(templ.WithChildren(ctx, templ_7745c5c3_Var2), templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		return nil
+	})
+}
+
+func savePublicKeyForm() templ.Component {
+	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
+		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
+		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
+			return templ_7745c5c3_CtxErr
+		}
+		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templruntime.GetBuffer(templ_7745c5c3_W)
+		if !templ_7745c5c3_IsBuffer {
+			defer func() {
+				templ_7745c5c3_BufErr := templruntime.ReleaseBuffer(templ_7745c5c3_Buffer)
+				if templ_7745c5c3_Err == nil {
+					templ_7745c5c3_Err = templ_7745c5c3_BufErr
+				}
+			}()
+		}
+		ctx = templ.InitializeContext(ctx)
+		templ_7745c5c3_Var3 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var3 == nil {
+			templ_7745c5c3_Var3 = templ.NopComponent
+		}
+		ctx = templ.ClearChildren(ctx)
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "<form method=\"post\" action=\"/api/wallet/save-key\" class=\"space-y-4\"><label class=\"label\"><span class=\"label-text\">Paste your public key:</span></label> <textarea name=\"pubKey\" class=\"textarea textarea-bordered w-full h-32\" required></textarea> <button class=\"btn btn-primary\" type=\"submit\">Set Key</button></form><div class=\"mt-6 text-sm text-center\"><span>Don't have a wallet yet?</span> <a href=\"/wallet/create\" class=\"link-secondary\">Create one</a></div>")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		return nil
+	})
+}
+
+func buyCoinsDialog(publicKey string) templ.Component {
+	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
+		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
+		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
+			return templ_7745c5c3_CtxErr
+		}
+		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templruntime.GetBuffer(templ_7745c5c3_W)
+		if !templ_7745c5c3_IsBuffer {
+			defer func() {
+				templ_7745c5c3_BufErr := templruntime.ReleaseBuffer(templ_7745c5c3_Buffer)
+				if templ_7745c5c3_Err == nil {
+					templ_7745c5c3_Err = templ_7745c5c3_BufErr
+				}
+			}()
+		}
+		ctx = templ.InitializeContext(ctx)
+		templ_7745c5c3_Var4 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var4 == nil {
+			templ_7745c5c3_Var4 = templ.NopComponent
+		}
+		ctx = templ.ClearChildren(ctx)
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "<button class=\"btn btn-md btn-primary\" onclick=\"buy_dcoins_modal.showModal()\">")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = icons.HandCoins().Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "Buy more dcoins!</button> <dialog id=\"buy_dcoins_modal\" class=\"modal\"><div class=\"modal-box\"><form action=\"/api/transactions/buy\" method=\"post\" x-target=\"alert-info alert-warning alert-error\" class=\"mb-4\" @ajax:success=\"\n              const html = $event.detail.raw;\n              if (html.includes('alert-info')) {\n                $el.reset();\n                buy_dcoins_modal.close();\n              }\n              \"><label class=\"label\">Private Key</label> <textarea class=\"textarea textarea-bordered w-full mb-2\" required name=\"private_key\" x-autofocus></textarea> <label class=\"label\">Amount</label> <input type=\"number\" class=\"input input-bordered w-full mb-4\" required min=\"1\" name=\"amount\"> <input type=\"text\" value=\"")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		var templ_7745c5c3_Var5 string
+		templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(publicKey)
+		if templ_7745c5c3_Err != nil {
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internals/frontend/pages/wallet_page/wallet.templ`, Line: 72, Col: 40}
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "\" name=\"to\" hidden><div class=\"modal-action\"><button class=\"btn btn-md btn-outline\" type=\"button\" onclick=\"buy_dcoins_modal.close()\">Cancel</button> <button class=\"btn btn-md btn-primary\" type=\"submit\">Confirm</button></div><div id=\"alert-error\"></div><div id=\"alert-warning\"></div></form></div><form method=\"dialog\" class=\"modal-backdrop\"><button>close</button></form></dialog>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

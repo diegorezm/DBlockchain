@@ -6,11 +6,15 @@ import (
 	"time"
 
 	"github.com/diegorezm/DBlockchain/internals/blockchain"
+	"github.com/diegorezm/DBlockchain/internals/frontend/components/alerts"
 	"github.com/diegorezm/DBlockchain/internals/frontend/pages/blocks_page"
 	"github.com/diegorezm/DBlockchain/internals/utils"
 	webutils "github.com/diegorezm/DBlockchain/internals/web_utils"
 	"github.com/go-chi/chi/v5"
+	"github.com/gorilla/schema"
 )
+
+var decoder = schema.NewDecoder()
 
 type BlockchainClientHandler struct {
 	blockchain *blockchain.Blockchain
@@ -40,22 +44,28 @@ func (bc *BlockchainClientHandler) Mine(w http.ResponseWriter, r *http.Request) 
 }
 
 type appendTransactionInput struct {
-	PrivateKey string  `json:"private_key"`
-	From       string  `json:"from"`
-	To         string  `json:"to"`
-	Amount     float64 `json:"amount"`
+	PrivateKey string  `schema:"private_key"`
+	From       string  `schema:"from"`
+	To         string  `schema:"to"`
+	Amount     float64 `schema:"amount"`
 }
 
 func (bc *BlockchainClientHandler) AppendTransaction(w http.ResponseWriter, r *http.Request) {
-	input, err := webutils.ParseJSON[appendTransactionInput](r.Body)
+	err := r.ParseForm()
 	if err != nil {
-		webutils.WriteBadRequest(w, fmt.Sprintf("Invalid request payload: %v", err))
+		webutils.WriteTempl(w, http.StatusBadRequest, alerts.AlertError("Could not parse your request."), r.Context())
+		return
+	}
+
+	var input appendTransactionInput
+	if err := decoder.Decode(&input, r.PostForm); err != nil {
+		webutils.WriteTempl(w, http.StatusBadRequest, alerts.AlertError("Could not parse your request."), r.Context())
 		return
 	}
 
 	privKey, err := utils.DecodePrivateKey(input.PrivateKey)
 	if err != nil {
-		webutils.WriteBadRequest(w, "Failed to parse private key")
+		webutils.WriteTempl(w, http.StatusBadRequest, alerts.AlertError("Failed to parse private key"), r.Context())
 		return
 	}
 
@@ -63,39 +73,27 @@ func (bc *BlockchainClientHandler) AppendTransaction(w http.ResponseWriter, r *h
 
 	var txIns []blockchain.TxIn
 	var totalInput float64
-	// For each availiable UTXO, we append a TxIn. We do this until there is enougth money
 	for _, utxo := range availableUTXOs {
 		txIns = append(txIns, blockchain.TxIn{
 			TxOutId:    utxo.TxId,
 			TxOutIndex: utxo.Index,
 		})
-
 		totalInput += utxo.Output.Amount
-
 		if totalInput >= input.Amount {
 			break
 		}
 	}
 
 	if totalInput < input.Amount {
-		webutils.WriteBadRequest(w, "Insufficient funds")
+		webutils.WriteTempl(w, http.StatusInternalServerError, alerts.AlertWarning("Insufficient funds."), r.Context())
 		return
 	}
 
-	var txOuts []blockchain.TxOut
-
-	// Primary recipient
-	txOuts = append(txOuts, blockchain.TxOut{
-		Address: input.To,
-		Amount:  input.Amount,
-	})
-
-	change := totalInput - input.Amount
-	if change > 0 {
-		txOuts = append(txOuts, blockchain.TxOut{
-			Address: input.From,
-			Amount:  change,
-		})
+	txOuts := []blockchain.TxOut{
+		{Address: input.To, Amount: input.Amount},
+	}
+	if change := totalInput - input.Amount; change > 0 {
+		txOuts = append(txOuts, blockchain.TxOut{Address: input.From, Amount: change})
 	}
 
 	txInput := blockchain.TransactionInput{
@@ -106,43 +104,53 @@ func (bc *BlockchainClientHandler) AppendTransaction(w http.ResponseWriter, r *h
 
 	signedTx, err := blockchain.NewSignedTransaction(txInput, privKey)
 	if err != nil {
-		webutils.WriteInternalServerError(w, err.Error())
+		webutils.WriteTempl(w, http.StatusInternalServerError, alerts.AlertError("Signing failed."), r.Context())
 		return
 	}
 
 	if err := bc.blockchain.AppendTransaction(signedTx); err != nil {
-		webutils.WriteInternalServerError(w, fmt.Sprintf("Failed to add transaction: %v", err))
+		webutils.WriteTempl(w, http.StatusBadRequest, alerts.AlertError(fmt.Sprintf("Failed to add transaction: %v", err)), r.Context())
 		return
 	}
-	webutils.WriteSuccess(w, signedTx, "Transaction added to pool")
+
+	webutils.WriteTempl(w, http.StatusOK, alerts.AlertInfo("Transaction added to pool."), r.Context())
 }
 
 type buyCoinsRequest struct {
-	PrivateKey string  `json:"private_key"`
-	To         string  `json:"to"`
-	Amount     float64 `json:"amount"`
+	PrivateKey string  `schema:"private_key"`
+	To         string  `schema:"to"`
+	Amount     float32 `schema:"amount"`
 }
 
 func (bc *BlockchainClientHandler) BuyCoins(w http.ResponseWriter, r *http.Request) {
-	input, err := webutils.ParseJSON[buyCoinsRequest](r.Body)
+	err := r.ParseForm()
+
 	if err != nil {
-		webutils.WriteBadRequest(w, fmt.Sprintf("Invalid request payload: %v", err))
+		webutils.WriteBadRequest(w, "Could not parse your request.")
+		return
+	}
+
+	var input buyCoinsRequest
+	err = decoder.Decode(&input, r.PostForm)
+
+	if err != nil {
+		webutils.WriteTempl(w, http.StatusBadRequest, alerts.AlertError(fmt.Sprintf("Failed to parse your request: %v", err)), r.Context())
 		return
 	}
 
 	privKey, err := utils.DecodePrivateKey(input.PrivateKey)
 	if err != nil {
-		webutils.WriteBadRequest(w, "Failed to parse private key")
+		webutils.WriteTempl(w, http.StatusBadRequest, alerts.AlertError(fmt.Sprintf("Failed to parse your private key: %v", err)), r.Context())
 		return
 	}
 
 	if input.Amount <= 0 {
-		webutils.WriteBadRequest(w, "Amount must be greater than zero")
+		webutils.WriteTempl(w, http.StatusBadRequest, alerts.AlertError("The amount should be greater than 0."), r.Context())
 		return
 	}
 
 	if input.To == "" {
-		webutils.WriteBadRequest(w, "Recipient public key is required")
+		webutils.WriteTempl(w, http.StatusBadRequest, alerts.AlertError("Not a valid address."), r.Context())
 		return
 	}
 
@@ -152,22 +160,23 @@ func (bc *BlockchainClientHandler) BuyCoins(w http.ResponseWriter, r *http.Reque
 		TxOuts: []blockchain.TxOut{
 			{
 				Address: input.To,
-				Amount:  input.Amount,
+				Amount:  float64(input.Amount),
 			},
 		},
 	}
 
 	signedTx, err := blockchain.NewSignedTransaction(txInput, privKey)
 	if err != nil {
-		webutils.WriteInternalServerError(w, err.Error())
+		webutils.WriteTempl(w, http.StatusInternalServerError, alerts.AlertError(fmt.Sprintf("Failed sign your transaction: %v", err)), r.Context())
 		return
 	}
 
 	if err := bc.blockchain.AppendTransaction(signedTx); err != nil {
-		webutils.WriteInternalServerError(w, fmt.Sprintf("Failed to add transaction: %v", err))
+		webutils.WriteTempl(w, http.StatusInternalServerError, alerts.AlertError(fmt.Sprintf("Failed add your transaction: %v", err)), r.Context())
 		return
 	}
-	webutils.WriteSuccess(w, signedTx, "Transaction added to pool")
+
+	webutils.WriteTempl(w, http.StatusOK, alerts.AlertInfo("Your transaction was successfull! Now just wait for your another block to be mined."), r.Context())
 }
 
 func (bc *BlockchainClientHandler) ReplaceChain(w http.ResponseWriter, r *http.Request) {

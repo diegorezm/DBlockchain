@@ -1,0 +1,26 @@
+package transactions_page
+
+import "github.com/diegorezm/DBlockchain/internals/blockchain"
+
+templ TransactionsMempoolTable(transactions []blockchain.Transaction) {
+	<div class="mt-2 overflow-x-auto rounded-box border border-base-content/5 bg-base-100" id="transactions_mempool_table">
+		<table class="table">
+			<thead>
+				<tr>
+					<th>#</th>
+					<th>TxIns</th>
+					<th>TxOuts</th>
+				</tr>
+			</thead>
+			<tbody>
+				for _, t := range transactions {
+					<tr>
+						<td>{ t.Id }</td>
+						<td>{ len(t.TxIns) }</td>
+						<td>{ len(t.TxOuts) }</td>
+					</tr>
+				}
+			</tbody>
+		</table>
+	</div>
+}
