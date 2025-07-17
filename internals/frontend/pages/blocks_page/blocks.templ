@@ -10,14 +10,22 @@ templ BlocksPage(blocks []blockchain.Block) {
 	@layout.DashboardLayout("/blocks") {
 		<main class="max-w-2xl w-full">
 			<h1 class="text-3xl font-bold mb-6 ">Blocks</h1>
-			<form action="/api/chain/mine" method="post" x-target="blocks_table" class="mb-3">
-				<button class="btn btn-primary btn-md">
-					@icons.Pickaxe(icons.Props{
-						Size: 20,
-					})
-					Mine
-				</button>
-			</form>
+			<nav class="flex items-center justify-between">
+				<form action="/api/chain/mine" method="post" x-target="blocks_table" class="mb-3">
+					<button class="btn btn-primary btn-md">
+						@icons.Pickaxe()
+						Mine
+					</button>
+				</form>
+				<form action="/api/chain/replace" method="post" x-target="alert-info alert-error" class="mb-3">
+					<button class="btn btn-outline btn-md">
+						@icons.RefreshCW()
+						Refresh
+					</button>
+				</form>
+			</nav>
+			<div id="alert-info"></div>
+			<div id="alert-error"></div>
 			@BlocksTable(blocks)
 		</main>
 	}

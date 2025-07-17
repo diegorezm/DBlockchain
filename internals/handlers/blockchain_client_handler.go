@@ -181,23 +181,21 @@ func (bc *BlockchainClientHandler) BuyCoins(w http.ResponseWriter, r *http.Reque
 
 func (bc *BlockchainClientHandler) ReplaceChain(w http.ResponseWriter, r *http.Request) {
 	replaced, err := bc.blockchain.ReplaceChain()
+
 	if err != nil {
-		webutils.WriteInternalServerError(w, fmt.Sprintf("Failed to replace chain: %v", err))
+		webutils.WriteTempl(w, http.StatusOK, alerts.AlertError(fmt.Sprintf("Failed to replace chain: %v", err)), r.Context())
 		return
 	}
 
-	respData := map[string]bool{
-		"replaced": replaced,
-	}
-
 	message := "Chain replacement attempted."
+
 	if replaced {
 		message = "Blockchain was successfully replaced."
 	} else {
 		message = "Blockchain was not replaced (current chain is valid and/or longer)."
 	}
 
-	webutils.WriteSuccess(w, respData, message)
+	webutils.WriteTempl(w, http.StatusOK, alerts.AlertInfo(message), r.Context())
 }
 
 func (bc *BlockchainClientHandler) IsChainValid(w http.ResponseWriter, r *http.Request) {
@@ -212,7 +210,7 @@ func (bc *BlockchainClientHandler) IsChainValid(w http.ResponseWriter, r *http.R
 func (bc *BlockchainClientHandler) Register(r chi.Router) {
 	r.Get("/chain", bc.GetChain)
 	r.Get("/chain/is_valid", bc.IsChainValid)
-	r.Get("/chain/replace", bc.ReplaceChain)
+	r.Post("/chain/replace", bc.ReplaceChain)
 	r.Post("/chain/mine", bc.Mine)
 	r.Post("/transactions/add", bc.AppendTransaction)
 	r.Post("/transactions/buy", bc.BuyCoins)

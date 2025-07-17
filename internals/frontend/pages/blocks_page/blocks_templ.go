@@ -47,17 +47,23 @@ func BlocksPage(blocks []blockchain.Block) templ.Component {
 				}()
 			}
 			ctx = templ.InitializeContext(ctx)
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<main class=\"max-w-2xl w-full\"><h1 class=\"text-3xl font-bold mb-6 \">Blocks</h1><form action=\"/api/chain/mine\" method=\"post\" x-target=\"blocks_table\" class=\"mb-3\"><button class=\"btn btn-primary btn-md\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<main class=\"max-w-2xl w-full\"><h1 class=\"text-3xl font-bold mb-6 \">Blocks</h1><nav class=\"flex items-center justify-between\"><form action=\"/api/chain/mine\" method=\"post\" x-target=\"blocks_table\" class=\"mb-3\"><button class=\"btn btn-primary btn-md\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = icons.Pickaxe(icons.Props{
-				Size: 20,
-			}).Render(ctx, templ_7745c5c3_Buffer)
+			templ_7745c5c3_Err = icons.Pickaxe().Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "Mine</button></form>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "Mine</button></form><form action=\"/api/chain/replace\" method=\"post\" x-target=\"alert-info alert-error\" class=\"mb-3\"><button class=\"btn btn-outline btn-md\">")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = icons.RefreshCW().Render(ctx, templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "Refresh</button></form></nav><div id=\"alert-info\"></div><div id=\"alert-error\"></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -65,7 +71,7 @@ func BlocksPage(blocks []blockchain.Block) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "</main>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "</main>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
