@@ -9,26 +9,65 @@ type link struct {
 }
 
 templ Sidebar(currentPath string) {
+	@sidebar(currentPath)
+	@mobileSidebar(currentPath)
+}
+
+templ mobileSidebar(currentPath string) {
+	<div x-data="{ open: false }" class="lg:hidden absolute">
+		<!-- Toggle button -->
+		<button class="m-4  btn btn-sm btn-outline" @click="open = true">
+			@icons.Menu()
+		</button>
+		<!-- Overlay -->
+		<div x-show="open" class="fixed inset-0 bg-black opacity-20 z-40" x-cloak @click="open = false"></div>
+		<!-- Sidebar drawer -->
+		<aside
+			x-show="open"
+			x-transition
+			class="fixed top-0 left-0 z-50 w-64 h-full bg-base-100 text-base-content shadow-lg px-4 py-2"
+			x-cloak
+		>
+			<div class="flex justify-between mt-4">
+				<div class="inline-flex gap-2 items-center">
+					<img src="/assets/favicon.svg" alt="favicon"/>
+					<h1 class="text-lg font-semibold">DBlockchain</h1>
+				</div>
+				<button class="btn btn-sm btn-ghost" @click="open = false">
+					&#10006;
+				</button>
+			</div>
+			<div class="divider divider-neutral-content"></div>
+			@navigation(currentPath)
+		</aside>
+	</div>
+}
+
+templ sidebar(currentPath string) {
 	<aside
-		class="h-screen w-[300px] px-4 py-6 border-r-1  border-neutral-content bg-base-100 text-base-content fixed left-0 top-0 shadow-lg"
+		class="hidden lg:block h-screen w-[300px] px-4 py-6 border-r-1  border-neutral-content bg-base-100 text-base-content fixed left-0 top-0 shadow-lg"
 	>
 		<div class="inline-flex gap-2 items-center">
 			<img src="/assets/favicon.svg" alt="favicon"/>
 			<h1 class="text-lg font-semibold">DBlockchain</h1>
 		</div>
 		<div class="divider divider-neutral-content"></div>
-		<ul class="flex flex-col gap-2 w-full">
-			for _, link := range getLinksToRender() {
-				{{ isCurrentPath := link.href == currentPath }}
-				<li>
-					<a href={ templ.URL(link.href) } class={ getLinkStyles(), getActiveLinkStyles(isCurrentPath) }>
-						@icons.GetIconFromString(link.icon)(icons.Props{Size: 20})
-						{ link.title }
-					</a>
-				</li>
-			}
-		</ul>
+		@navigation(currentPath)
 	</aside>
+}
+
+templ navigation(currentPath string) {
+	<ul class="flex flex-col gap-2 w-full">
+		for _, link := range getLinksToRender() {
+			{{ isCurrentPath := link.href == currentPath }}
+			<li>
+				<a href={ templ.URL(link.href) } class={ getLinkStyles(), getActiveLinkStyles(isCurrentPath) }>
+					@icons.GetIconFromString(link.icon)(icons.Props{Size: 20})
+					{ link.title }
+				</a>
+			</li>
+		}
+	</ul>
 }
 
 func getLinkStyles() string {

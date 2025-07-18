@@ -9,7 +9,7 @@ import (
 
 templ WalletPage(currentPublicKey string, utxos []blockchain.UTXO) {
 	@layout.DashboardLayout("/wallet") {
-		<main class="p-6 max-w-2xl w-full mx-auto">
+		<main class="max-w-2xl w-full mx-auto">
 			<h1 class="text-3xl font-bold mb-6">Wallet</h1>
 			if currentPublicKey == "" {
 				@savePublicKeyForm()

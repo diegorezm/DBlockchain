@@ -47,7 +47,7 @@ func CreateWalletPage() templ.Component {
 				}()
 			}
 			ctx = templ.InitializeContext(ctx)
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<main class=\"p-6 max-w-4xl mx-auto\"><nav class=\"mb-6 space-y-2\"><a href=\"/wallet\" class=\"btn btn-sm btn-outline\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<main class=\" max-w-2xl mx-auto w-full\"><nav class=\"mb-6 space-y-2\"><a href=\"/wallet\" class=\"btn btn-sm btn-outline\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

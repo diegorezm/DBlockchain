@@ -126,7 +126,7 @@ func CopyAndPaste(id, title, content string) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "</span></button></div></div><script>\n    // If you are reading this, you probably realized that i am passing the ID not the element!\n    // i have no idea why this works\n    function copyAndPaste(el) {\n      navigator.clipboard.writeText(el.value);\n    }\n  </script></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "</span></button></div></div><script>\n    // If you are reading this, you probably realized that i am passing the ID not the element!\n    // i have no idea why this works\n    function copyAndPaste(id) {\n      const el = document.getElementById(id)\n      navigator.clipboard.writeText(el.value);\n    }\n  </script></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

@@ -1,9 +1,11 @@
 package handlers
 
 import (
+	"io/fs"
 	"net/http"
 
 	"github.com/diegorezm/DBlockchain/internals/blockchain"
+	"github.com/diegorezm/DBlockchain/internals/frontend"
 	"github.com/diegorezm/DBlockchain/internals/frontend/pages/blocks_page"
 	"github.com/diegorezm/DBlockchain/internals/frontend/pages/transactions_page"
 	"github.com/diegorezm/DBlockchain/internals/frontend/pages/wallet_page"
@@ -72,6 +74,18 @@ func (h *FrontendHandler) GetTransactionsPage(w http.ResponseWriter, r *http.Req
 
 func (h *FrontendHandler) ServeAssets(r chi.Router) {
 	r.Use(middleware.StripSlashes)
+	if frontend.IsDev {
+		// Serve from disk
+		fileServer := http.FileServer(http.Dir("./internals/frontend/assets"))
+		r.Handle("/*", http.StripPrefix("/assets", fileServer))
+	} else {
+		assetsFS, err := fs.Sub(frontend.EmbdedAssets, "assets")
+		if err != nil {
+			panic(err)
+		}
+		fileServer := http.FileServer(http.FS(assetsFS))
+		r.Handle("/*", http.StripPrefix("/assets", fileServer))
+	}
 	fileServer := http.FileServer(http.Dir("./internals/frontend/assets"))
 	r.Handle("/*", http.StripPrefix("/assets", fileServer))
 }

@@ -44,7 +44,8 @@ templ CopyAndPaste(id, title, content string) {
 		<script>
     // If you are reading this, you probably realized that i am passing the ID not the element!
     // i have no idea why this works
-    function copyAndPaste(el) {
+    function copyAndPaste(id) {
+      const el = document.getElementById(id)
       navigator.clipboard.writeText(el.value);
     }
   </script>

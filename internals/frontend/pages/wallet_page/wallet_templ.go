@@ -48,7 +48,7 @@ func WalletPage(currentPublicKey string, utxos []blockchain.UTXO) templ.Componen
 				}()
 			}
 			ctx = templ.InitializeContext(ctx)
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<main class=\"p-6 max-w-2xl w-full mx-auto\"><h1 class=\"text-3xl font-bold mb-6\">Wallet</h1>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<main class=\"max-w-2xl w-full mx-auto\"><h1 class=\"text-3xl font-bold mb-6\">Wallet</h1>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

@@ -8,7 +8,7 @@ clean:
 	@rm -rf bin
 
 build_client: build-deps tailwind
-	@go build -o $(CLIENT_OUTPUT_PATH) $(CLIENT_PATH)
+	@go build -ldflags="-X 'internals/frontend/assets.IsDev=false'" -o $(CLIENT_OUTPUT_PATH) $(CLIENT_PATH)
 	@chmod +x $(CLIENT_OUTPUT_PATH)
 
 build_server:
