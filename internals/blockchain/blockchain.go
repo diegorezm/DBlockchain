@@ -118,8 +118,10 @@ func (b *Blockchain) GetUTXPoolByAddress(address string) []UTXO {
 	utxos := b.GetUTXOPool()
 	result := make([]UTXO, 0)
 
+	fmt.Printf("utxos: %v\n", utxos)
+
 	for _, u := range utxos {
-		if u.Output.Address == address {
+		if strings.TrimSpace(u.Output.Address) == strings.TrimSpace(address) {
 			result = append(result, u)
 		}
 	}
