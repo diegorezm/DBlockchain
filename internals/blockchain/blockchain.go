@@ -17,7 +17,7 @@ import (
 
 type Blockchain struct {
 	Chain               []Block       `json:"chain"`
-	TransactionsMempool []Transaction `json:"transactions_mempool"` // the mempool: pending txs
+	TransactionsMempool []Transaction `json:"transactions_mempool"`
 	Difficulty          uint32        `json:"difficulty"`
 	ServerUrl           string        `json:"server_url"`
 	CurrentNode         string        `json:"current_node"`

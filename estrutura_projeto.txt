@@ -1,0 +1,23 @@
+[1;34m.[0m
+[1;90m├── [34mcmd[0m
+[1;90m│   ├── [34mclient[0m
+[1;90m│   └── [34mserver[0m
+[1;90m├── [34minternals[0m
+[1;90m│   ├── [34mblockchain[0m
+[1;90m│   ├── [34mfrontend[0m
+[1;90m│   ├── [34mhandlers[0m
+[1;90m│   ├── [34mutils[0m
+[1;90m│   └── [34mweb_utils[0m
+[1;90m├── [0m.gitignore
+[1;90m├── [0m.rules
+[1;90m├── [0mbiome.jsonc
+[1;90m├── [0mbun.lock
+[1;90m├── [0mestrutura_projeto
+[1;90m├── [0mestrutura_projeto.txt
+[1;90m├── [0mgo.mod
+[1;90m├── [0mgo.sum
+[1;90m├── [0mLICENSE
+[1;90m├── [4;33mMakefile[0m
+[1;90m├── [4;33mpackage.json[0m
+[1;90m├── [32mrunner.sh[0m
+[1;90m└── [0mtest_keys.md

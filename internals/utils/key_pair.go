@@ -9,8 +9,8 @@ import (
 )
 
 type EncodedKeyPair struct {
-	PrivateKey string `json:"private_key"` // base64
-	PublicKey  string `json:"public_key"`  // base64
+	PrivateKey string `json:"private_key"`
+	PublicKey  string `json:"public_key"`
 }
 
 func GenerateKeyPair() (*ecdsa.PrivateKey, error) {
