@@ -2,6 +2,7 @@ package blockchain
 
 import (
 	"encoding/csv"
+	"fmt"
 	"os"
 	"strconv"
 	"testing"
@@ -10,8 +11,9 @@ import (
 	"github.com/diegorezm/DBlockchain/internals/utils"
 )
 
-func writeMetric(name string, iteration int, diff uint32, value time.Duration) {
-	file, err := os.OpenFile("metrics_results.csv",
+func writeMetric(file_name, name string, iteration int, diff uint32, value time.Duration) {
+	f := fmt.Sprintf("%s.csv", file_name)
+	file, err := os.OpenFile(f,
 		os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		panic(err)
@@ -26,11 +28,13 @@ func writeMetric(name string, iteration int, diff uint32, value time.Duration) {
 		_ = writer.Write([]string{"metric_name", "iteration", "difficulty", "duration_ns"})
 	}
 
+	durationMs := float64(value.Microseconds()) / 1000.0
+
 	record := []string{
 		name,
 		strconv.Itoa(iteration),
 		strconv.Itoa(int(diff)),
-		value.String(),
+		fmt.Sprintf("%.3f", durationMs),
 	}
 	_ = writer.Write(record)
 }
@@ -68,22 +72,22 @@ func BenchmarkMetric_TransactionValidation(b *testing.B) {
 		_ = bc.ValidateTransaction(newTx)
 		elapsed := time.Since(start)
 
-		writeMetric("TransactionValidation", i, bc.Difficulty, elapsed)
+		writeMetric("ts_validation_metrics", "TransactionValidation", i, bc.Difficulty, elapsed)
 		b.Logf("Validação da transação levou: %v", elapsed)
 	}
 }
 
 func BenchmarkMetric_MiningSpeedByDifficulty(b *testing.B) {
-	for d := uint32(2); d <= 5; d++ {
+	for d := uint32(1); d <= 6; d++ {
 		bc := NewBlockchain("")
 		bc.Difficulty = d
 
-		for i := range 5 {
+		for i := range 10 {
 			start := time.Now()
 			_ = bc.AppendBlock()
 			elapsed := time.Since(start)
 
-			writeMetric("MiningSpeed", i, d, elapsed)
+			writeMetric("mining_speed_metrics", "MiningSpeed", i, d, elapsed)
 			b.Logf("Dificuldade: %d — Tempo: %v", d, elapsed)
 		}
 	}

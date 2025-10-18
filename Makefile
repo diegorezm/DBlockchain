@@ -30,6 +30,9 @@ templ-dev:
 templ:
 	go tool templ generate 
 
+benchmark:
+	go test -bench=. -benchmem ./...
+
 dev-server:
 	go tool air \
 		--build.cmd "go build -o tmp/bin/main ./cmd/client/main.go" \

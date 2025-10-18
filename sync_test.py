@@ -5,7 +5,7 @@ from datetime import datetime
 
 NODE_A = "http://localhost:3000"
 NODE_B = "http://localhost:3001"
-ROUNDS = 5
+ROUNDS = 40
 CSV_FILE = "sync_results.csv"
 
 
@@ -38,11 +38,11 @@ def main():
     for i in range(ROUNDS):
         print(f"\n--- Round {i + 1} ---")
 
-        print("⛏️  Mining block on Node A...")
+        print("⛏️  Minerando o Node A...")
         if not mine_block(NODE_A):
             continue
 
-        print("🔄 Syncing Node B with Node A...")
+        print("🔄 Sync Node B com o Node A...")
         elapsed = replace_chain(NODE_B)
         if elapsed is not None:
             print(f"✅ Sync completed in {elapsed:.2f} ms")

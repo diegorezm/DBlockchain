@@ -29,7 +29,7 @@ func NewBlockchain(currentNode string) *Blockchain {
 
 	return &Blockchain{
 		Chain:               chain,
-		Difficulty:          2,
+		Difficulty:          4,
 		ServerUrl:           "http://localhost:4040",
 		CurrentNode:         currentNode,
 		TransactionsMempool: make([]Transaction, 0),
