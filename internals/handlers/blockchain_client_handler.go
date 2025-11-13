@@ -32,7 +32,7 @@ func (bc *BlockchainClientHandler) GetChain(w http.ResponseWriter, r *http.Reque
 }
 
 func (bc *BlockchainClientHandler) Mine(w http.ResponseWriter, r *http.Request) {
-	if err := bc.blockchain.AppendBlock(); err != nil {
+	if err, _ := bc.blockchain.AppendBlock(); err != nil {
 		webutils.WriteInternalServerError(w, fmt.Sprintf("Failed to mine new block: %v", err))
 		return
 	}

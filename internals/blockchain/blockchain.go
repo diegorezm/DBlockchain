@@ -36,10 +36,10 @@ func NewBlockchain(currentNode string) *Blockchain {
 	}
 }
 
-func (b *Blockchain) AppendBlock() error {
+func (b *Blockchain) AppendBlock() (error, int) {
 	lastBlock := b.GetLastBlock()
 	if lastBlock == nil {
-		return fmt.Errorf("Something went wrong while getting the last block.")
+		return fmt.Errorf("Something went wrong while getting the last block."), 0
 	}
 
 	newBlockInsert := BlockInsert{
@@ -52,17 +52,17 @@ func (b *Blockchain) AppendBlock() error {
 	blockToMine := NewBlock(newBlockInsert)
 	blockToMine.Timestamp = time.Now().Unix()
 
-	newBlock := b.mine(blockToMine)
+	newBlock, nonceCount := b.mine(blockToMine)
 
 	err := isBlockPairValid(lastBlock, newBlock)
 
 	if err != nil {
-		return err
+		return err, 0
 	}
 
 	b.Chain = append(b.Chain, *newBlock)
 	b.TransactionsMempool = make([]Transaction, 0)
-	return nil
+	return nil, nonceCount
 }
 
 func (b *Blockchain) GetLastBlock() *Block {
@@ -257,10 +257,12 @@ func getBlockchainFromNode(address string) ([]Block, error) {
 
 // This function mines the chain untils it finds a valid block, when this block is found
 // the mining stops and the valid block is returned.
-func (b *Blockchain) mine(blockToMine *Block) *Block {
+func (b *Blockchain) mine(blockToMine *Block) (*Block, int) {
 	var nonce uint64 = 0
+	nonceCount := 0
 
 	for {
+		nonceCount++
 		blockToMine.Nonce = nonce
 		computedHash := hashBlock(blockToMine)
 
@@ -274,7 +276,7 @@ func (b *Blockchain) mine(blockToMine *Block) *Block {
 			panic("Mining failed to find a block within 1 billion attempts (difficulty too high or logic error)\n")
 		}
 	}
-	return blockToMine
+	return blockToMine, nonceCount
 }
 
 func IsChainValid(chain []Block) bool {

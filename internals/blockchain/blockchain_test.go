@@ -18,7 +18,7 @@ func TestBlockchain_AppendBlock(t *testing.T) {
 	if len(blockchain.Chain) == 0 {
 		t.Error("The genesis block was not created.\n")
 	}
-	err := blockchain.AppendBlock()
+	err, _ := blockchain.AppendBlock()
 	if err != nil {
 		t.Errorf("The block was not appended to the chain.\n%v\n", err)
 	}
@@ -82,7 +82,7 @@ func TestBlockchain_Transaction(t *testing.T) {
 	blockchain.AppendTransaction(newTX)
 
 	// 8. Mine the block
-	err = blockchain.AppendBlock()
+	err, _ = blockchain.AppendBlock()
 	if err != nil {
 		t.Fatalf("Failed to mine block with transaction: %v", err)
 	}
